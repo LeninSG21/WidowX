@@ -1,0 +1,21 @@
+WidowX	KEYWORD1
+init	KEYWORD2
+CheckVoltage	KEYWORD2
+MoveCenter	KEYWORD2
+MoveHome	KEYWORD2
+MoveRest	KEYWORD2
+MoveArm		KEYWORD2
+RelaxServos	KEYWORD2
+TorqueServos	KEYWORD2
+MoveServo2Angle	KEYWORD2
+MoveServo2Position	KEYWORD2
+MoveWrist	KEYWORD2
+TurnWrist	KEYWORD2
+MoveGrip	KEYWORD2
+getCurrentPosition	KEYWORD2
+getPoint	KEYWORD2
+rotz	KEYWORD2
+roty	KEYWORD2
+rotx	KEYWORD2
+
+
