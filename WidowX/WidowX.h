@@ -63,15 +63,10 @@ private:
     void getDesiredPosition(int success);
     float positionToAngle(int id, int position);
     int angleToPosition(int id, float angle);
-    uint8_t getIK(const float Px, const float Py, const float Pz, Matrix<3, 3> &Rd);
-    uint8_t getIK(const float Px, const float Py, const float Pz);
-    Matrix<3, 3> getRotZ_Q5(float gamma, float q1, const Matrix<3, 3> &Rd);
     void setBioloidPose();
     void getPoint();
 
     //Serial functions
-    void printArr(float arr[]);
-    void printArr(int arr[]);
 };
 
 #endif
