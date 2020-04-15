@@ -28,14 +28,27 @@ public:
     void setId(int idx, int newID);
     int getId(int idx);
 
-    //Preloaded positions
-    void MoveCenter();
-    void MoveHome();
-    void MoveRest();
+    //Preloaded Positions
+    void moveCenter();
+    void moveHome();
+    void moveRest();
+
+    //Get Information
+    void checkVoltage();
+    void getCurrentPosition();
+    int getServoPosition(int idx);
+    void getPoint(float *p);
 
     //Torque
-    void RelaxServos();
-    void TorqueServos();
+    void relaxServos();
+    void torqueServos();
+
+    //Move Servo
+    void moveServo2Angle(int idx, float angle);
+    void moveServo2Position(int idx, int pos);
+    void moveWrist(int direction);
+    void turnWrist(int direction);
+    void moveGrip(int close);
 
     //Move Arm
     void moveArmQ4(float Px, float Py, float Pz);
@@ -47,33 +60,20 @@ public:
     void moveArmRdBase(float Px, float Py, float Pz, Matrix<3, 3> &RdBase);
     void moveArmRdBase(float Px, float Py, float Pz, Matrix<3, 3> &RdBase, int time);
 
-    //Move Servo
-    void MoveServo2Angle(int id, float angle);
-    void MoveServo2Position(int id, int pos);
-    void MoveWrist(int direction);
-    void TurnWrist(int direction);
-    void MoveGrip(int close);
-
-    //Get Information
-    void getCurrentPosition();
-    int getServoPosition(int idx);
-    void getPoint(float *p);
-    void CheckVoltage();
-
 private:
-    //Variables
+    //Constants
     BioloidController bioloid;
     const uint8_t SERVOCOUNT;
-    uint8_t id[6];
-    uint8_t isRelaxed;
     const float L0, L1, L2, L3, L4, D, alpha;
     const int DEFAULT_TIME;
 
+    //Variables
+    uint8_t id[6];
+    uint8_t isRelaxed;
     int current_position[6];
     float current_angle[6];
     float desired_angle[6];
     int desired_position[6];
-
     float point[3];
 
     //Conversions
@@ -85,9 +85,9 @@ private:
     void setBioloidPose();
     void getPoint();
 
-    //IK
-    uint8_t getIK_Gamma(float Px, float Py, float Pz, float gamma);
+    //Inverse Kinematics
     uint8_t getIK_Q4(float Px, float Py, float Pz);
+    uint8_t getIK_Gamma(float Px, float Py, float Pz, float gamma);
     uint8_t getIK_Rd(float Px, float Py, float Pz, Matrix<3, 3> &Rd);
     uint8_t getIK_RdBase(float Px, float Py, float Pz, Matrix<3, 3> &RdBase);
 
@@ -95,8 +95,6 @@ private:
     void rotz(float angle, Matrix<3, 3> &Rz);
     void roty(float angle, Matrix<3, 3> &Ry);
     void rotx(float angle, Matrix<3, 3> &Rx);
-
-    //Serial functions
 };
 
 #endif
