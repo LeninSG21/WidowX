@@ -135,7 +135,7 @@ void WidowX::MoveServo2Angle(int id, float angle)
     if (id < 1 || id > SERVOCOUNT)
         return;
     int pos = angleToPosition(id - 1, angle);
-    int curr = GetPosition(id);
+    int curr = getServoPosition(id - 1);
     if (curr < pos)
     {
         while (curr < pos)
@@ -158,7 +158,8 @@ void WidowX::MoveServo2Position(int id, int pos)
 {
     if (id < 1 || id > SERVOCOUNT)
         return;
-    int curr = GetPosition(id);
+
+    int curr = getServoPosition(id - 1);
     if (curr < pos)
     {
         while (curr < pos)
@@ -179,7 +180,7 @@ void WidowX::MoveServo2Position(int id, int pos)
 
 void WidowX::MoveWrist(int direction)
 {
-    posQ4 = GetPosition(4);
+    posQ4 = getServoPosition(3);
     if (direction)
     {
         if (posQ4 < 3080)
@@ -199,7 +200,7 @@ void WidowX::MoveWrist(int direction)
 
 void WidowX::TurnWrist(int direction)
 {
-    posQ5 = GetPosition(5);
+    posQ5 = getServoPosition(4);
     if (direction)
     {
         if (posQ5 < 1013)
@@ -227,7 +228,7 @@ void WidowX::TurnWrist(int direction)
 
 void WidowX::MoveGrip(int close)
 {
-    posQ6 = GetPosition(6);
+    posQ6 = getServoPosition(5);
     if (close)
     {
         if (posQ6 < 10)
@@ -311,7 +312,7 @@ void WidowX::getCurrentPosition()
     }
 }
 
-void WidowX::getServoPosition(int id)
+int WidowX::getServoPosition(int id)
 {
     current_position[id] = GetPosition(id + 1);
     if (current_position[id] == -1)
@@ -327,6 +328,7 @@ void WidowX::getServoPosition(int id)
             current_position[id] = angleToPosition(id, 0);
     }
     current_angle[id] = positionToAngle(id, current_position[id]);
+    return current_position[id];
 }
 
 float WidowX::positionToAngle(int id, int position)
@@ -366,37 +368,15 @@ int WidowX::angleToPosition(int id, float angle)
         return round(195.378524405 * angle + 511.5);
 }
 
-// int WidowX::getPosQ4()
-// {
-//     uint8_t i = 0;
-//     current_position[3] = GetPosition(4);
-//     if (current_position[3] == -1)
-//     {
-//         for (i = 0; i < 5; i++)
-//         {
-//             current_position[3] = GetPosition(4);
-//             if (current_position[3] != -1)
-//                 break;
-//             delay(3);
-//         }
-//         if (i == 5)
-//             current_position[3] == = angleToPosition(3, 0);
-//     }
-//     current_angle[3] = positionToAngle(3, current_position[3]);
-// }
-
 uint8_t WidowX::getIK_Q4(float Px, float Py, float Pz)
 {
 
     const float X = sqrt(pow(Px, 2) + pow(Py, 2));
     const float Z = Pz - L0;
 
-    getServoPosition(3);
-    getServoPosition(4);
-    getServoPosition(5);
-    q4 = current_angle[3];
-    q5 = current_angle[4];
-    q6 = current_angle[5];
+    q4 = getServoPosition(3);
+    q5 = getServoPosition(4);
+    q6 = getServoPosition(5);
 
     const float sa = sin(alpha), ca = cos(alpha);
     const float s4 = sin(q4), c4 = cos(q4);
@@ -478,14 +458,12 @@ uint8_t WidowX::getIK_Gamma(float Px, float Py, float Pz, float gamma)
 
     q1 = atan2(Py, Px);
 
-    getServoPosition(4);
-    getServoPosition(5);
     desired_angle[0] = q1;
     desired_angle[1] = q2;
     desired_angle[2] = q3;
     desired_angle[3] = q4;
-    desired_angle[4] = current_angle[4];
-    desired_angle[5] = current_angle[5];
+    desired_angle[4] = getServoPosition(4);
+    desired_angle[5] = getServoPosition(5);
 
     return 1;
 }
@@ -542,13 +520,12 @@ uint8_t WidowX::getIK_Rd(float Px, float Py, float Pz, Matrix<3, 3> &Rd)
             q5 = 5 * M_PI / 6;
     }
 
-    getServoPosition(5);
     desired_angle[0] = q1;
     desired_angle[1] = q2;
     desired_angle[2] = q3;
     desired_angle[3] = q4;
     desired_angle[4] = q5;
-    desired_angle[5] = current_angle[5];
+    desired_angle[5] = getServoPosition(5);
 
     return 1;
 }

@@ -65,7 +65,7 @@ private:
     int angleToPosition(int id, float angle);
     void setBioloidPose();
     void getPoint();
-    void getServoPosition(int id);
+    int getServoPosition(int id);
 
     //IK
     uint8_t getIK_Gamma(float Px, float Py, float Pz, float gamma);
