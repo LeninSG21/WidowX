@@ -20,34 +20,51 @@ using namespace BLA;
 class WidowX
 {
 public:
+    //Initializers
     WidowX();
     void init();
-    void CheckVoltage();
+
+    //id Handlers
+    void setId(int idx, int newID);
+    int getId(int idx);
+
+    //Preloaded positions
     void MoveCenter();
     void MoveHome();
     void MoveRest();
-    void MoveArm(float Px, float Py, float Pz, BLA::Matrix<3, 3> &Rd);
-    void MoveArm(float Px, float Py, float Pz, BLA::Matrix<3, 3> &Rd, int time);
-    void MoveArm(float Px, float Py, float Pz);
-    void MoveArm(float Px, float Py, float Pz, int time);
+
+    //Torque
     void RelaxServos();
     void TorqueServos();
+
+    //Move Arm
+    void moveArmQ4(float Px, float Py, float Pz);
+    void moveArmQ4(float Px, float Py, float Pz, int time);
+    void moveArmGamma(float Px, float Py, float Pz, float gamma);
+    void moveArmGamma(float Px, float Py, float Pz, float gamma, int time);
+    void moveArmRd(float Px, float Py, float Pz, Matrix<3, 3> &Rd);
+    void moveArmRd(float Px, float Py, float Pz, Matrix<3, 3> &Rd, int time);
+    void moveArmRdBase(float Px, float Py, float Pz, Matrix<3, 3> &RdBase);
+    void moveArmRdBase(float Px, float Py, float Pz, Matrix<3, 3> &RdBase, int time);
+
+    //Move Servo
     void MoveServo2Angle(int id, float angle);
     void MoveServo2Position(int id, int pos);
     void MoveWrist(int direction);
     void TurnWrist(int direction);
     void MoveGrip(int close);
+
+    //Get Information
     void getCurrentPosition();
+    int getServoPosition(int idx);
     void getPoint(float *p);
-    void rotz(float angle, Matrix<3, 3> &Rz);
-    void roty(float angle, Matrix<3, 3> &Ry);
-    void rotx(float angle, Matrix<3, 3> &Rx);
+    void CheckVoltage();
 
 private:
     //Variables
     BioloidController bioloid;
     const uint8_t SERVOCOUNT;
-    uint8_t id;
+    uint8_t id[6];
     uint8_t isRelaxed;
     const float L0, L1, L2, L3, L4, D, alpha;
     const int DEFAULT_TIME;
@@ -59,19 +76,25 @@ private:
 
     float point[3];
 
-    //Functions
-    void getDesiredPosition(int success);
-    float positionToAngle(int id, int position);
-    int angleToPosition(int id, float angle);
+    //Conversions
+    float positionToAngle(int idx, int position);
+    int angleToPosition(int idx, float angle);
+
+    //Poses and interpolation
+    void interpolate(int time);
     void setBioloidPose();
     void getPoint();
-    int getServoPosition(int id);
 
     //IK
     uint8_t getIK_Gamma(float Px, float Py, float Pz, float gamma);
     uint8_t getIK_Q4(float Px, float Py, float Pz);
     uint8_t getIK_Rd(float Px, float Py, float Pz, Matrix<3, 3> &Rd);
     uint8_t getIK_RdBase(float Px, float Py, float Pz, Matrix<3, 3> &RdBase);
+
+    //Rotations
+    void rotz(float angle, Matrix<3, 3> &Rz);
+    void roty(float angle, Matrix<3, 3> &Ry);
+    void rotx(float angle, Matrix<3, 3> &Rx);
 
     //Serial functions
 };

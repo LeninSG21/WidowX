@@ -27,6 +27,10 @@ WidowX::WidowX()
       isRelaxed(0), DEFAULT_TIME(1000)
 {
     bioloid.setup(SERVOCOUNT);
+    for (uint8_t i = 0; i < SERVOCOUNT; i++)
+    {
+        id[i] = id + 1;
+    }
 }
 
 void WidowX::init()
@@ -39,6 +43,19 @@ void WidowX::init()
     getCurrentPosition();
     delay(10);
     RelaxServos();
+}
+
+void WidowX::setId(int idx, int newID)
+{
+    if (idx < 0 || idx >= SERVOCOUNT)
+        return;
+    id[idx] = newID;
+    bioloid.setId(idx, newID);
+}
+
+int WidowX::getId(int idx)
+{
+    return id[idx];
 }
 
 void WidowX::CheckVoltage()
@@ -112,9 +129,9 @@ void WidowX::MoveRest()
 
 void WidowX::RelaxServos()
 {
-    for (id = 1; id <= SERVOCOUNT; id++)
+    for (uint8_t i = 0; i < SERVOCOUNT; i++)
     {
-        Relax(id);
+        Relax(id[i]);
         delay(10);
     }
     isRelaxed = 1;
@@ -122,25 +139,25 @@ void WidowX::RelaxServos()
 
 void WidowX::TorqueServos()
 {
-    for (id = 1; id <= SERVOCOUNT; id++)
+    for (uint8_t i = 0; i < SERVOCOUNT; i++)
     {
-        TorqueOn(id);
+        TorqueOn(id[i]);
         delay(10);
     }
     isRelaxed = 0;
 }
 
-void WidowX::MoveServo2Angle(int id, float angle)
+void WidowX::MoveServo2Angle(int idx, float angle)
 {
-    if (id < 1 || id > SERVOCOUNT)
+    if (idx < 0 || idx >= SERVOCOUNT)
         return;
-    int pos = angleToPosition(id - 1, angle);
-    int curr = getServoPosition(id - 1);
+    int pos = angleToPosition(idx, angle);
+    int curr = getServoPosition(idx);
     if (curr < pos)
     {
         while (curr < pos)
         {
-            SetPosition(id, ++curr);
+            SetPosition(id[idx], ++curr);
             delay(3);
         }
     }
@@ -148,23 +165,23 @@ void WidowX::MoveServo2Angle(int id, float angle)
     {
         while (curr > pos)
         {
-            SetPosition(id, --curr);
+            SetPosition(id[idx], --curr);
             delay(3);
         }
     }
 }
 
-void WidowX::MoveServo2Position(int id, int pos)
+void WidowX::MoveServo2Position(int idx, int pos)
 {
-    if (id < 1 || id > SERVOCOUNT)
+    if (idx < 0 || idx >= SERVOCOUNT)
         return;
 
-    int curr = getServoPosition(id - 1);
+    int curr = getServoPosition(idx);
     if (curr < pos)
     {
         while (curr < pos)
         {
-            SetPosition(id, ++curr);
+            SetPosition(id[idx], ++curr);
             delay(3);
         }
     }
@@ -172,7 +189,7 @@ void WidowX::MoveServo2Position(int id, int pos)
     {
         while (curr > pos)
         {
-            SetPosition(id, --curr);
+            SetPosition(id[idx], --curr);
             delay(3);
         }
     }
@@ -195,7 +212,7 @@ void WidowX::MoveWrist(int direction)
             posQ4 -= 50;
         }
     }
-    SetPosition(4, posQ4);
+    SetPosition(id[3], posQ4);
 }
 
 void WidowX::TurnWrist(int direction)
@@ -223,7 +240,7 @@ void WidowX::TurnWrist(int direction)
             posQ5 = 0;
         }
     }
-    SetPosition(5, posQ5);
+    SetPosition(id[4], posQ5);
 }
 
 void WidowX::MoveGrip(int close)
@@ -255,36 +272,124 @@ void WidowX::MoveGrip(int close)
             posQ6 = 512;
         }
     }
-    SetPosition(6, posQ6);
+    SetPosition(id[5], posQ6);
+}
 }
 
-void WidowX::MoveArm(float Px, float Py, float Pz)
+void WidowX::moveArmRdBase(float Px, float Py, float Pz, Matrix<3, 3> &RdBase)
 {
     if (isRelaxed)
-        TorqueServos();
-    if (getIK(Px, Py, Pz) == 0)
-        return;
+        MoveRest();
 
-    setBioloidPose();
-    bioloid.interpolateSetup(DEFAULT_TIME);
-    while (bioloid.interpolating > 0)
-    {                              // do this while we have not reached our new pose
-        bioloid.interpolateStep(); // move servos, if necessary.
-        delay(3);
-    }
-}
-
-void WidowX::MoveArm(float Px, float Py, float Pz, int time)
-{
-    if (isRelaxed)
-        TorqueServos();
-
-    if (getIK(Px, Py, Pz) == 0)
+    if (getIK_RdBase(Px, Py, Pz, &RdBase))
     {
         Serial.println("No solution for IK!");
         return;
     }
 
+    interpolate(DEFAULT_TIME);
+}
+
+void WidowX::moveArmRdBase(float Px, float Py, float Pz, Matrix<3, 3> &RdBase, int time)
+{
+    if (isRelaxed)
+        MoveRest();
+
+    if (getIK_RdBase(Px, Py, Pz, &RdBase))
+    {
+        Serial.println("No solution for IK!");
+        return;
+    }
+
+    interpolate(time);
+}
+
+void WidowX::moveArmRd(float Px, float Py, float Pz, Matrix<3, 3> &Rd)
+{
+    if (isRelaxed)
+        MoveRest();
+
+    if (getIK_Rd(Px, Py, Pz, &Rd))
+    {
+        Serial.println("No solution for IK!");
+        return;
+    }
+
+    interpolate(DEFAULT_TIME);
+}
+
+void WidowX::moveArmRd(float Px, float Py, float Pz, Matrix<3, 3> &Rd, int time)
+{
+    if (isRelaxed)
+        MoveRest();
+
+    if (getIK_Rd(Px, Py, Pz, &Rd))
+    {
+        Serial.println("No solution for IK!");
+        return;
+    }
+
+    interpolate(time);
+}
+
+void WidowX::moveArmGamma(float Px, float Py, float Pz, float gamma)
+{
+    if (isRelaxed)
+        MoveRest();
+
+    if (getIK_Gamma(Px, Py, Pz, gamma))
+    {
+        Serial.println("No solution for IK!");
+        return;
+    }
+
+    interpolate(DEFAULT_TIME);
+}
+
+void WidowX::moveArmGamma(float Px, float Py, float Pz, float gamma, int time)
+{
+    if (isRelaxed)
+        MoveRest();
+
+    if (getIK_Gamma(Px, Py, Pz, gamma))
+    {
+        Serial.println("No solution for IK!");
+        return;
+    }
+
+    interpolate(time);
+}
+
+void WidowX::moveArmQ4(float Px, float Py, float Pz)
+{
+    if (isRelaxed)
+        MoveRest();
+
+    if (getIK_Q4(Px, Py, Pz))
+    {
+        Serial.println("No solution for IK!");
+        return;
+    }
+
+    interpolate(DEFAULT_TIME);
+}
+
+void WidowX::moveArmQ4(float Px, float Py, float Pz, int time)
+{
+    if (isRelaxed)
+        MoveRest();
+
+    if (getIK_Q4(Px, Py, Pz))
+    {
+        Serial.println("No solution for IK!");
+        return;
+    }
+
+    interpolate(time);
+}
+
+void WidowX::interpolate(int time)
+{
     setBioloidPose();
     bioloid.interpolateSetup(time);
     while (bioloid.interpolating > 0)
@@ -296,69 +401,65 @@ void WidowX::MoveArm(float Px, float Py, float Pz, int time)
 
 void WidowX::setBioloidPose()
 {
-    for (id = 0; id < SERVOCOUNT; id++)
+    for (uint8_t i = 0; i < SERVOCOUNT; i++)
     {
-        desired_position[id] = angleToPosition(id, desired_angle[id]);
-        bioloid.setNextPose(id + 1, desired_position[id]);
+        desired_position[i] = angleToPosition(i, desired_angle[i]);
+        bioloid.setNextPose(id[i], desired_position[i]);
     }
 }
 
 void WidowX::getCurrentPosition()
 {
-    uint8_t i;
-    for (id = 0; id < SERVOCOUNT; id++)
+    for (uint8_t i = 0; i < SERVOCOUNT; i++)
     {
-        getServoPosition(id);
+        getServoPosition(i);
     }
 }
 
-int WidowX::getServoPosition(int id)
+int WidowX::getServoPosition(int idx)
 {
-    current_position[id] = GetPosition(id + 1);
-    if (current_position[id] == -1)
+    current_position[idx] = GetPosition(id[idx]);
+    if (current_position[idx] == -1)
     {
         for (i = 0; i < 5; i++)
         {
-            current_position[id] = GetPosition(id + 1);
-            if (current_position[id] != -1)
+            current_position[idx] = GetPosition(id[idx]);
+            if (current_position[idx] != -1)
                 break;
             delay(3);
         }
         if (i == 5)
-            current_position[id] = angleToPosition(id, 0);
+            current_position[idx] = angleToPosition(idx, 0);
     }
-    current_angle[id] = positionToAngle(id, current_position[id]);
-    return current_position[id];
+    current_angle[idx] = positionToAngle(idx, current_position[idx]);
+    return current_position[idx];
 }
 
-float WidowX::positionToAngle(int id, int position)
+float WidowX::positionToAngle(int idx, int position)
 {
-    if (id == 0 || id == 3 || id == 2) //MX-28 || MX-64
+    if (idx == 0 || idx == 3 || idx == 2) //MX-28 || MX-64
         //0 - 4095, 0.088°
         // 0° - 360°
-        // return (float)0.0015 * position - 3.072;
         return 0.00153435538637 * (position - 2047.5);
-    else if (id == 1) //MX-64
+    else if (idx == 1) //MX-64
         //0 - 4095, 0.088°
         // 0° - 360°
-        // return (float)-0.0015 * position + 3.072;
         return -0.00153435538637 * (position - 2047.5);
     else //AX-12
         //0-1023
         //0° - 300°
-        // return (float)0.0051 * position - 2.6112;
         return 0.00511826979472 * (position - 511.5);
 }
 
-int WidowX::angleToPosition(int id, float angle)
+int WidowX::angleToPosition(int idx, float angle)
 {
-    if (id == 0 || id == 3 || id == 2) //MX-28 || MX-64
+    if (idx == 0 || idx == 3 || idx == 2) //MX-28 || MX-64
         //0 - 4095, 0.088°
         // 0° - 360°
         // return (int)651.74 * angle + 2048;
         return round(651.739492 * angle + 2047.5);
 
-    else if (id == 1) //MX-64
+    else if (idx == 1) //MX-64
         //0 - 4095, 0.088°
         // 0° - 360°
         return round(-651.739492 * angle + 2047.5);
@@ -541,24 +642,6 @@ uint8_t WidowX::getIK_RdBase(float Px, float Py, float Pz, Matrix<3, 3> &RdBase)
     return getIK_Rd(Px, Py, Pz, Rd);
 }
 
-void WidowX::getPoint(float *p)
-{
-    getCurrentPosition();
-    q1 = current_angle[0];
-    q2 = current_angle[1];
-    q3 = current_angle[2];
-    q4 = current_angle[3];
-
-    phi2 = D * cos(alpha + q2) + L3 * cos(q2 + q3) + L4 * cos(q2 + q3 + q4);
-
-    point[0] = cos(q1) * phi2;
-    point[1] = sin(q1) * phi2;
-    point[2] = L0 + D * sin(alpha + q2) + L3 * sin(q2 + q3) + L4 * sin(q2 + q3 + q4);
-    p[0] = point[0];
-    p[1] = point[1];
-    p[2] = point[2];
-}
-
 void WidowX::getPoint()
 {
     getCurrentPosition();
@@ -572,6 +655,14 @@ void WidowX::getPoint()
     point[0] = cos(q1) * phi2;
     point[1] = sin(q1) * phi2;
     point[2] = L0 + D * sin(alpha + q2) + L3 * sin(q2 + q3) + L4 * sin(q2 + q3 + q4);
+}
+
+void WidowX::getPoint(float *p)
+{
+    getPoint();
+    p[0] = point[0];
+    p[1] = point[1];
+    p[2] = point[2];
 }
 
 void WidowX::rotz(float angle, Matrix<3, 3> &Rz)
