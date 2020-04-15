@@ -13,20 +13,13 @@
 
 using namespace BLA;
 
-const Matrix<3, 3> invRotXPi = {1, 0, 0,
-                                0, -1, 0,
-                                0, 0, -1};
-
-const Matrix<3, 3> invRotYPi_2 = {0, 0, -1,
-                                  0, 1, 0,
-                                  1, 0, 0};
-
 Matrix<3, 3> RotYGamma;
 Matrix<3, 3> RotZ_Q1;
 float a, b, c, cond;
 float q1, q2, q3, q4, q5, q6;
 float phi2;
 int posQ4, posQ5, posQ6;
+const limPi_2 = 181 * M_PI / 360;
 
 WidowX::WidowX()
     : bioloid(BioloidController(1000000)), SERVOCOUNT(6), id(1), L0(9), L1(14), L2(5), L3(14),
@@ -387,7 +380,7 @@ int WidowX::angleToPosition(int id, float angle)
 //     current_angle[3] = positionToAngle(3, current_position[3]);
 // }
 
-uint8_t WidowX::getIK(const float Px, const float Py, const float Pz)
+uint8_t WidowX::getIK_Q4(const float Px, const float Py, const float Pz)
 {
 
     const float X = sqrt(pow(Px, 2) + pow(Py, 2));
@@ -411,11 +404,11 @@ uint8_t WidowX::getIK(const float Px, const float Py, const float Pz)
 
     q3 = 2 * atan2(b - sqrt(cond), a + c);
     q3 = atan2(sin(q3), cos(q3));
-    if (q3 > 8 * M_PI / 9 || q3 < -23 * M_PI / 45)
+    if (q3 > 3 * M_PI_4 || q3 < -limPi_2)
     {
         q3 = 2 * atan2(b + sqrt(cond), a + c);
         q3 = atan2(sin(q3), cos(q3));
-        if (q3 > 8 * M_PI / 9 || q3 < -23 * M_PI / 45)
+        if (q3 > 3 * M_PI_4 || q3 < -limPi_2)
             return 0;
     }
 
@@ -425,7 +418,7 @@ uint8_t WidowX::getIK(const float Px, const float Py, const float Pz)
     a = D * ca + L3 * c3 + L4 * c3 * c4 - L4 * s3 * s4;
     b = D * sa + L3 * s3 + L4 * s3 * c4 + L4 * c3 * s4;
     q2 = atan2(a * Z - b * X, a * X + b * Z);
-    if (abs(q2) > 17 * M_PI / 32)
+    if (abs(q2) > limPi_2)
         return 0;
 
     q1 = atan2(Py, Px);
@@ -436,6 +429,55 @@ uint8_t WidowX::getIK(const float Px, const float Py, const float Pz)
     desired_angle[3] = q4;
     desired_angle[4] = q5;
     desired_angle[5] = q6;
+
+    return 1;
+}
+
+uint8_t WidowX::getIK_Gamma(float Px, float Py, float Pz, float gamma)
+{
+    float X = sqrt(pow(Px, 2) + pow(Py, 2));
+    float Z = Pz - L0;
+
+    const float sa = sin(alpha), ca = cos(alpha);
+    const float sg = sin(gamma), cg = cos(gamma);
+
+    X = X - L4 * cg;
+    Z = Z + L4 * sg;
+
+    c = (pow(X, 2) + pow(Z, 2) - pow(D, 2) - pow(L3, 2)) / (2 * D * L3);
+    if (abs(c) > 1)
+        return 0;
+
+    q3 = alpha + acos(c);
+    q3 = atan2(sin(q3), cos(q3));
+
+    if (q3 > 3 * M_PI_4 || q3 < -limPi_2)
+    {
+        q3 = alpha - acos(c);
+        q3 = atan2(sin(q3), cos(q3));
+        if (q3 > 3 * M_PI_4 || q3 < -limPi_2)
+            return 0; //No hay solución por la geometría del brazo
+    }
+
+    const float c3 = cos(q3), s3 = sin(q3);
+    a = D * ca + L3 * c3;
+    b = D * sa + L3 * s3;
+    q2 = atan2(a * Z - b * X, a * X + b * Z);
+    if (abs(q2) > limPi_2)
+        return 0;
+    q4 = -gamma - q2 - q3;
+    if (abs(q4) > limPi_2)
+        return 0;
+
+    q1 = atan2(Py, Px);
+
+    getCurrentPosition();
+    desired_angle[0] = q1;
+    desired_angle[1] = q2;
+    desired_angle[2] = q3;
+    desired_angle[3] = q4;
+    desired_angle[4] = current_angle[4];
+    desired_angle[5] = current_angle[5];
 
     return 1;
 }
@@ -471,92 +513,6 @@ void WidowX::getPoint()
     point[0] = cos(q1) * phi2;
     point[1] = sin(q1) * phi2;
     point[2] = L0 + D * sin(alpha + q2) + L3 * sin(q2 + q3) + L4 * sin(q2 + q3 + q4);
-}
-
-uint8_t WidowX::getIK(const float Px, const float Py, const float Pz, Matrix<3, 3> &Rd)
-{
-    //Transformación de punto deseado de 0 a 5
-    float x = Px - L4 * Rd(0, 2), y = Py - L4 * Rd(1, 2), z = Pz - L0 - L4 * Rd(2, 2);
-
-    //Condición para el tercer valor articular
-    float b = (pow(x, 2) + pow(y, 2) + pow(z, 2) - pow(D, 2) - pow(L3, 2)) / (2 * D * L3);
-    if (1 - pow(b, 2) < 0)
-        return false;
-    //Se obtiene el tercer valor articular
-    float q3 = alpha - acos(b);
-    //Se revisa la geometría del brazo
-    if (q3 > 8 * M_PI / 9 || q3 < -23 * M_PI / 45)
-    {
-        q3 = alpha - acos(b);
-        if (q3 > 8 * M_PI / 9 || q3 < -23 * M_PI / 45)
-        {
-            return 0;
-        }
-    }
-
-    //Se obtiene el primer valor articular
-    float q1_1 = atan2(y, x), q1_2 = atan2(-y, -x), q1;
-    if (abs(q1_1) < abs(q1_2))
-        q1 = q1_1;
-    else
-        q1 = q1_2;
-
-    //Se obtiene el segundo valor articular
-    float q2 = atan2(z, x * cos(q1) + y * sin(q1)) - atan2(D * sin(alpha) + L3 * sin(q3), D * cos(alpha) + L3 * cos(q3));
-
-    //Se cargan los tres valores articulares a la matriz
-    desired_angle[0] = q1;
-    desired_angle[1] = q2;
-    desired_angle[2] = q3;
-
-    //Se obtiene gamma de la rotación deseada
-    float temp = sqrt(1 - pow(Rd(2, 2), 2)); //variable temporal para no repetir cálculo
-    //opciones de valor gamma. Se deben cumplir ambas
-    float gS[2] = {atan2(Rd(2, 2), temp), atan2(Rd(2, 2), -temp)}, gC[2];
-
-    float e = 0.01;                        //error permitido
-    if (abs(q1) < e || M_PI - abs(q1) < e) // sin(q1) = 0
-    {
-        gC[0] = acos(Rd(0, 2) / cos(q1));
-        gC[1] = -acos(Rd(0, 2) / cos(q1));
-    }
-    else
-    {
-        gC[0] = acos(Rd(1, 2) / sin(q1));
-        gC[1] = -acos(Rd(1, 2) / sin(q1));
-    }
-
-    float gamma;
-    //Condición de que ambos resultados sean aproximadamente iguales
-    if (abs(gS[0] - gC[0]) <= e || abs(gS[0] - gC[1]) <= e)
-        gamma = gS[0];
-    else if (abs(gS[1] - gC[0]) <= e || abs(gS[1] - gC[1]) <= e)
-        gamma = gS[1];
-    else
-        return 1;
-
-    //Se obtiene el cuarto valor articular
-    float q4 = gamma - q2 - q3;
-    if (q4 > 23 * M_PI / 45)
-    {
-        q4 = M_PI_2;
-        gamma = q4 + q2 + q3;
-    }
-    else if (q4 < -23 * M_PI / 45)
-    {
-        q4 = -M_PI_2;
-        gamma = q4 + q2 + q3;
-    }
-
-    //Matriz de rotación de q5 en Z
-    Matrix<3, 3> RzQ5 = getRotZ_Q5(gamma, q1, Rd);
-    float q5 = atan2(RzQ5(1, 0), RzQ5(0, 0));
-    q5 = atan2(sin(q5), cos(q5));
-
-    desired_angle[3] = q4;
-    desired_angle[4] = q5;
-    desired_angle[5] = 0.0;
-    return 2;
 }
 
 void WidowX::rotz(float angle, Matrix<3, 3> &Rz)
