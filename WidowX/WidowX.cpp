@@ -307,21 +307,26 @@ void WidowX::getCurrentPosition()
     uint8_t i;
     for (id = 0; id < SERVOCOUNT; id++)
     {
-        current_position[id] = GetPosition(id + 1);
-        if (current_position[id] == -1)
-        {
-            for (i = 0; i < 5; i++)
-            {
-                current_position[id] = GetPosition(id + 1);
-                if (current_position[id] != -1)
-                    break;
-                delay(3);
-            }
-            if (i == 5)
-                current_position[id] = angleToPosition(id, 0);
-        }
-        current_angle[id] = positionToAngle(id, current_position[id]);
+        getServoPosition(id);
     }
+}
+
+void WidowX::getServoPosition(int id)
+{
+    current_position[id] = GetPosition(id + 1);
+    if (current_position[id] == -1)
+    {
+        for (i = 0; i < 5; i++)
+        {
+            current_position[id] = GetPosition(id + 1);
+            if (current_position[id] != -1)
+                break;
+            delay(3);
+        }
+        if (i == 5)
+            current_position[id] = angleToPosition(id, 0);
+    }
+    current_angle[id] = positionToAngle(id, current_position[id]);
 }
 
 float WidowX::positionToAngle(int id, int position)
@@ -380,13 +385,15 @@ int WidowX::angleToPosition(int id, float angle)
 //     current_angle[3] = positionToAngle(3, current_position[3]);
 // }
 
-uint8_t WidowX::getIK_Q4(const float Px, const float Py, const float Pz)
+uint8_t WidowX::getIK_Q4(float Px, float Py, float Pz)
 {
 
     const float X = sqrt(pow(Px, 2) + pow(Py, 2));
     const float Z = Pz - L0;
 
-    getCurrentPosition();
+    getServoPosition(3);
+    getServoPosition(4);
+    getServoPosition(5);
     q4 = current_angle[3];
     q5 = current_angle[4];
     q6 = current_angle[5];
@@ -471,7 +478,8 @@ uint8_t WidowX::getIK_Gamma(float Px, float Py, float Pz, float gamma)
 
     q1 = atan2(Py, Px);
 
-    getCurrentPosition();
+    getServoPosition(4);
+    getServoPosition(5);
     desired_angle[0] = q1;
     desired_angle[1] = q2;
     desired_angle[2] = q3;
@@ -480,6 +488,80 @@ uint8_t WidowX::getIK_Gamma(float Px, float Py, float Pz, float gamma)
     desired_angle[5] = current_angle[5];
 
     return 1;
+}
+
+uint8_t WidowX::getIK_Rd(float Px, float Py, float Pz, Matrix<3, 3> &Rd)
+{
+    float X = sqrt(pow(Px, 2) + pow(Py, 2));
+    float Z = Pz - L0;
+
+    const float sa = sin(alpha), ca = cos(alpha);
+    const float sg = -Rd(2, 0), cg = Rd(0, 0);
+
+    c = (pow(X, 2) + pow(Z, 2) - pow(D, 2) - pow(L3, 2)) / (2 * D * L3);
+    if (abs(c) > 1)
+        return 0;
+
+    q3 = alpha + acos(c);
+    q3 = atan2(sin(q3), cos(q3));
+
+    if (q3 > 3 * M_PI_4 || q3 < -limPi_2)
+    {
+        q3 = alpha - acos(c);
+        q3 = atan2(sin(q3), cos(q3));
+        if (q3 > 3 * M_PI_4 || q3 < -limPi_2)
+            return 0; //No hay solución por la geometría del brazo
+    }
+
+    const float c3 = cos(q3), s3 = sin(q3);
+    a = D * ca + L3 * c3;
+    b = D * sa + L3 * s3;
+    q2 = atan2(a * Z - b * X, a * X + b * Z);
+    if (abs(q2) > limPi_2)
+        return 0;
+
+    gamma = atan2(sg, cg);
+    q4 = -gamma - q2 - q3;
+
+    if (abs(q4) > limPi_2)
+        return 0;
+
+    q1 = atan2(Py, Px);
+
+    Matrix<3, 3> RyGamma;
+    roty(gamma, RyGamma);
+    Invert(RyGamma);
+    Matrix<3, 3> Rx5 = RyGamma * Rd;
+    q5 = atan2(Rx5(2, 1), Rx5(1, 1));
+
+    if (abs(q5) > 5 * M_PI / 6)
+    {
+        if (q5 < 0)
+            q5 = -5 * M_PI / 6;
+        else
+            q5 = 5 * M_PI / 6;
+    }
+
+    getServoPosition(5);
+    desired_angle[0] = q1;
+    desired_angle[1] = q2;
+    desired_angle[2] = q3;
+    desired_angle[3] = q4;
+    desired_angle[4] = q5;
+    desired_angle[5] = current_angle[5];
+
+    return 1;
+}
+
+uint8_t WidowX::getIK_RdBase(float Px, float Py, float Pz, Matrix<3, 3> &RdBase)
+{
+
+    q1 = atan2(Py, Px);
+    Matrix<3, 3> RzQ1;
+    rotz(q1, RzQ1);
+    Matrix<3, 3> Rd = RzQ1 * RdBase;
+
+    return getIK_Rd(Px, Py, Pz, Rd);
 }
 
 void WidowX::getPoint(float *p)
