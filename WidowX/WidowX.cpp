@@ -1,8 +1,27 @@
 /*
  * WidowX.h - Library to control WidowX Robotic Arm of Trossen Robotics
  * Created by Lenin Silva, April, 2020
+ * This library uses the index (idx) of each servo instead of its id. This is to simplify
+ * The logic. However, since both BioloidController and ax12 need the id of the 
+ * motor, an array of ids is also created with the default values from 1 to 6.
+ *  
+ * When working with idx, the first motor at the base is considered idx = 0; the second
+ * motor is idx = 1 and so on until the sixth motor (the gripper) with idx = 5. It is
+ * common to set these motors to consecutive ids from 1 to 6. Hence, the id array would 
+ * look like this: id = {1,2,3,4,5,6}. However, this would cause problems if the motors
+ * were given different arrays, which is why the idx method is preferred. In order to 
+ * work with another id, the following must be done:
+ * 
+ * Let's say that we want the third motor to have an id of 16. The third motor has
+ * and idx = 2, so id[2] should be 16. To do that, we use the function setId() and
+ * we give it the idx of the motor to change and the new id, like this: setId(2,16).
+ * This will also change the id inside the bioloid controller, since this one also
+ * needs the id array to be handled properly. To check that the id was set correctly,
+ * the getId function can be used: getId(2) --> 16. If the function returns the expected
+ * if, you're good to go. Howevere, if the return value is -1, it means that there was a 
+ * problem when setting the id of the bioloid controller, so the setId operation should 
+ * be done once again.
  */
-
 #include "Arduino.h"
 #include "WidowX.h"
 #include <ax12.h>
@@ -28,7 +47,11 @@ const limPi_2 = 181 * M_PI / 360;
     *** PUBLIC FUNCTIONS ***
 */
 
-//Initializers
+//INITIALIAZERS
+/*
+ * Constructor: intializes the bioloid controller to a baud of 1000000, sets the
+ * servo count to 6, and fills the id array from 1 to 6.
+*/
 WidowX::WidowX()
     : bioloid(BioloidController(1000000)), SERVOCOUNT(6), L0(9), L1(14), L2(5), L3(14),
       L4(14), D(sqrt(pow(L1, 2) + pow(L2, 2))), alpha(atan2(L1, L2)),
@@ -41,16 +64,24 @@ WidowX::WidowX()
     }
 }
 
+/*
+ * This is NOT a required function in order to work properly. It sends the arm to 
+ * rest position and it disables the torque to save energy. It also checks the 
+ * voltage with the function checkVoltage(). 
+*/
 void WidowX::init()
 {
     delay(10);
-    CheckVoltage();
-    MoveRest();
+    checkVoltage();
+    moveRest();
     delay(100);
-    RelaxServos();
+    relaxServos();
 }
 
-//id Handlers
+//ID HANDLERS
+/*
+ * Sets the id of the specified motor by idx
+*/
 void WidowX::setId(int idx, int newID)
 {
     if (idx < 0 || idx >= SERVOCOUNT)
@@ -59,12 +90,27 @@ void WidowX::setId(int idx, int newID)
     bioloid.setId(idx, newID);
 }
 
+/*
+ * Gets the id of the specified motor by idx. It checks that both the bioloid
+ * controller and the id array at the given index have the same value, to assure
+ * that it works properly. If both value are the same, it returns the id; 
+ * however, if they are different it returns -1 and the setId operation should be 
+ * tried once again
+*/
 int WidowX::getId(int idx)
 {
-    return id[idx];
+    if (bioloid.getId(idx) == id[idx])
+        return id[idx];
+    else
+        return -1;
 }
 
 //Preloaded Positions
+/*
+ * Moves to the arm to the center of all motors, forming an upside L. As seen from 
+ * the kinematic analysis done for this library, it would be equal to setting al
+ * articular values to 0°. Gets the current position once it's done.
+*/
 void WidowX::moveCenter()
 {
     delay(100);               // recommended pause
@@ -80,7 +126,10 @@ void WidowX::moveCenter()
     }
     getCurrentPosition();
 }
-
+/*
+ * Moves to the arm to the home position as defined by the bioloid controller.
+ * Gets the current position once it's done.
+*/
 void WidowX::moveHome()
 {
     delay(100);             // recommended pause
@@ -97,6 +146,11 @@ void WidowX::moveHome()
     getCurrentPosition();
 }
 
+/*
+ * Moves to the arm to the rest position, which is when the arm is resting over itself.
+ * Gets the current position once it's done.
+ * 
+*/
 void WidowX::moveRest()
 {
     delay(100);             // recommended pause
@@ -114,6 +168,12 @@ void WidowX::moveRest()
 }
 
 //Get Information
+/* 
+ * Checks that the voltage values are adequate for the robotic arm. If it is below
+ * 10V, it remains in a loop until the voltage increases. This is to prevent
+ * damage to the arm. Also, it prints to the serial monitor some information about the
+ * voltage.
+*/
 void WidowX::checkVoltage()
 {
     // wait, then check the voltage (LiPO safety)

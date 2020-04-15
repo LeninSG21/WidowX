@@ -1,6 +1,26 @@
 /*
  * WidowX.h - Library to control WidowX Robotic Arm of Trossen Robotics
  * Created by Lenin Silva, April, 2020
+ * This library uses the index (idx) of each servo instead of its id. This is to simplify
+ * The logic. However, since both BioloidController and ax12 need the id of the 
+ * motor, an array of ids is also created with the default values from 1 to 6.
+ *  
+ * When working with idx, the first motor at the base is considered idx = 0; the second
+ * motor is idx = 1 and so on until the sixth motor (the gripper) with idx = 5. It is
+ * common to set these motors to consecutive ids from 1 to 6. Hence, the id array would 
+ * look like this: id = {1,2,3,4,5,6}. However, this would cause problems if the motors
+ * were given different arrays, which is why the idx method is preferred. In order to 
+ * work with another id, the following must be done:
+ * 
+ * Let's say that we want the third motor to have an id of 16. The third motor has
+ * and idx = 2, so id[2] should be 16. To do that, we use the function setId() and
+ * we give it the idx of the motor to change and the new id, like this: setId(2,16).
+ * This will also change the id inside the bioloid controller, since this one also
+ * needs the id array to be handled properly. To check that the id was set correctly,
+ * the getId function can be used: getId(2) --> 16. If the function returns the expected
+ * if, you're good to go. Howevere, if the return value is -1, it means that there was a 
+ * problem when setting the id of the bioloid controller, so the setId operation should 
+ * be done once again.
  */
 
 #ifndef WidowX_h
@@ -20,11 +40,11 @@ using namespace BLA;
 class WidowX
 {
 public:
-    //Initializers
+    //INITIALIAZERS
     WidowX();
     void init();
 
-    //id Handlers
+    //ID HANDLERS
     void setId(int idx, int newID);
     int getId(int idx);
 
