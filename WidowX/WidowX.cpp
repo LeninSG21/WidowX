@@ -195,6 +195,9 @@ void WidowX::checkVoltage()
     Serial.println("###########################");
 }
 
+/*
+ * This function calls getServoPosition for each of the motors in the arm
+*/
 void WidowX::getCurrentPosition()
 {
     for (uint8_t i = 0; i < SERVOCOUNT; i++)
@@ -203,6 +206,18 @@ void WidowX::getCurrentPosition()
     }
 }
 
+/*
+ * This function calls the GetPosition function from the ax12.h library. However, it was seen that
+ * in some cases the value returned was -1. Hence, it made the arm to move drastically, which 
+ * represents a hazar to those around and the arm itself. That is why this function checks if the
+ * returned value is -1. If it is, it tries to read the current positon of the servo up to five
+ * mover times. If in those tries the value is still -1, then the postion is assumed to be 0.
+ * That way, the movement will be better than with the position at -1. Due to this check conditions,+
+ * this function is preferred over the readPose() function from the BioloidController.h library.
+ * NOTE: Since this function is not used in the predefined movement positions (moveHome, moveCenter and moveRest),
+ * there is a chance that the arm will move drastically since the bioloid function does not check 
+ * said condition.
+*/
 int WidowX::getServoPosition(int idx)
 {
     uint8_t i = 0;
@@ -223,6 +238,10 @@ int WidowX::getServoPosition(int idx)
     return current_position[idx];
 }
 
+/*
+ * Calls the private function get point to load the current point and copies
+ * the values into the provided pointer
+ */
 void WidowX::getPoint(float *p)
 {
     getPoint();
@@ -232,6 +251,11 @@ void WidowX::getPoint(float *p)
 }
 
 //Torque
+/*
+ * This function disables the torque of all the servos and sets the global flag isRelaxed to true.
+ * WARNING: when using it be careful of the arm's position; otherwise it can be damaged if it 
+ * impacts too hard on the ground or with another object
+ */
 void WidowX::relaxServos()
 {
     for (uint8_t i = 0; i < SERVOCOUNT; i++)
@@ -242,6 +266,9 @@ void WidowX::relaxServos()
     isRelaxed = 1;
 }
 
+/*
+ * This function enables the torque of every motor. It does not alter their current positions.
+ */
 void WidowX::torqueServos()
 {
     for (uint8_t i = 0; i < SERVOCOUNT; i++)
@@ -253,6 +280,11 @@ void WidowX::torqueServos()
 }
 
 //Move Servo
+/*
+ * Moves the specified motor (by its idx) to the desired angle in radians. It is important to understand
+ * the directions of turn of every motor as described in the documentation in order to select the
+ * appropriate angle
+*/
 void WidowX::moveServo2Angle(int idx, float angle)
 {
     if (idx < 0 || idx >= SERVOCOUNT)
@@ -277,6 +309,10 @@ void WidowX::moveServo2Angle(int idx, float angle)
     }
 }
 
+/**
+ * Moves the specified motor (by its idx) to the desired position. It does not validate if the position is in the appropriate
+ * ranges, so be careful
+*/
 void WidowX::moveServo2Position(int idx, int pos)
 {
     if (idx < 0 || idx >= SERVOCOUNT)
@@ -301,6 +337,11 @@ void WidowX::moveServo2Position(int idx, int pos)
     }
 }
 
+/**
+ * Moves the wrist (Q4) in the direction specified: 0 --> CW, 1 --> CCW in steps of 50
+ * Use it inside a loop with a delay to control the smoothnes of the turn. Ideal for
+ * movement with control or key that is being sent as long as it is pressed
+*/
 void WidowX::moveWrist(int direction)
 {
     posQ4 = getServoPosition(3);
@@ -321,6 +362,11 @@ void WidowX::moveWrist(int direction)
     SetPosition(id[3], posQ4);
 }
 
+/**
+ * Turns the wrist (Q5) in the direction specified: 0 --> CW, 1 --> CCW in steps of 10
+ * Use it inside a loop with a delay to control the smoothnes of the turn. Ideal for
+ * movement with control or key that is being sent as long as it is pressed
+*/
 void WidowX::turnWrist(int direction)
 {
     posQ5 = getServoPosition(4);
@@ -349,6 +395,11 @@ void WidowX::turnWrist(int direction)
     SetPosition(id[4], posQ5);
 }
 
+/**
+ * Closes or opens the gripper (Q6): close = 0 --> open, close = 1 --> close in steps of 10
+ * Use it inside a loop with a delay to control the smoothnes of the turn. Ideal for
+ * movement with control or key that is being sent as long as it is pressed
+*/
 void WidowX::moveGrip(int close)
 {
     posQ6 = getServoPosition(5);
@@ -382,6 +433,12 @@ void WidowX::moveGrip(int close)
 }
 
 //Move Arm
+/**
+ * Moves the center of the gripper to the specified coordinates Px, Py and Pz, as seen from the base of the robot.
+ * It uses getIK_Q4, so it moves the arm while maintaining the position of the fourth motor (wrist). This function
+ * only affects Q1, Q2 and Q3. It interpolates the step using the bioloid interpolation with the default time of 2000 ms.
+ * If there is no solution for the IK, the arm does not move and a message is printed into the serial monitor.
+*/
 void WidowX::moveArmQ4(float Px, float Py, float Pz)
 {
     if (isRelaxed)
@@ -396,6 +453,12 @@ void WidowX::moveArmQ4(float Px, float Py, float Pz)
     interpolate(DEFAULT_TIME);
 }
 
+/**
+ * Moves the center of the gripper to the specified coordinates Px, Py and Pz, as seen from the base of the robot.
+ * It uses getIK_Q4, so it moves the arm while maintaining the position of the fourth motor (wrist). This function
+ * only affects Q1, Q2 and Q3. It interpolates the step using the bioloid interpolation with the given time in milliseconds.
+ * If there is no solution for the IK, the arm does not move and a message is printed into the serial monitor.
+*/
 void WidowX::moveArmQ4(float Px, float Py, float Pz, int time)
 {
     if (isRelaxed)
@@ -410,6 +473,13 @@ void WidowX::moveArmQ4(float Px, float Py, float Pz, int time)
     interpolate(time);
 }
 
+/**
+ * Moves the center of the gripper to the specified coordinates Px, Py and Pz, as seen from the base of the robot, with the 
+ * desired angle gamma of the gripper. For example, gamma = pi/2 will make the arm a Pick N Drop since the gripper will be heading
+ * to the floor. It uses getIK_Gamma. This function only affects Q1, Q2, Q3, and Q4. 
+ * It interpolates the step using the bioloid interpolation with the default time of 2000 ms.
+ * If there is no solution for the IK, the arm does not move and a message is printed into the serial monitor.
+*/
 void WidowX::moveArmGamma(float Px, float Py, float Pz, float gamma)
 {
     if (isRelaxed)
@@ -424,6 +494,13 @@ void WidowX::moveArmGamma(float Px, float Py, float Pz, float gamma)
     interpolate(DEFAULT_TIME);
 }
 
+/**
+ * Moves the center of the gripper to the specified coordinates Px, Py and Pz, as seen from the base of the robot, with the 
+ * desired angle gamma of the gripper. For example, gamma = pi/2 will make the arm a Pick N Drop since the gripper will be heading
+ * to the floor. It uses getIK_Gamma. This function only affects Q1, Q2, Q3, and Q4. 
+ * It interpolates the step using the bioloid interpolation with the given time in milliseconds.
+ * If there is no solution for the IK, the arm does not move and a message is printed into the serial monitor.
+*/
 void WidowX::moveArmGamma(float Px, float Py, float Pz, float gamma, int time)
 {
     if (isRelaxed)
@@ -438,6 +515,14 @@ void WidowX::moveArmGamma(float Px, float Py, float Pz, float gamma, int time)
     interpolate(time);
 }
 
+/**
+ * Moves the center of the gripper to the specified coordinates Px, Py and Pz, and with the desired rotation of the coordinate system
+ * of the gripper, as seen from the coordinate system {1} of the robot. For example, when Rd is an identity matriz of 3x3, the gripper's 
+ * rotation will be such that the orientation of the system {1} and the orientation of the gripper's system will be exactly the same. Thus,
+ * it is harder to obtain solutions for the IK. It uses getIK_Rd. This function affects Q1, Q2, Q3, Q4, and Q5. 
+ * It interpolates the step using the bioloid interpolation with the default time of 2000 ms.
+ * If there is no solution for the IK, the arm does not move and a message is printed into the serial monitor.
+*/
 void WidowX::moveArmRd(float Px, float Py, float Pz, Matrix<3, 3> &Rd)
 {
     if (isRelaxed)
@@ -452,6 +537,14 @@ void WidowX::moveArmRd(float Px, float Py, float Pz, Matrix<3, 3> &Rd)
     interpolate(DEFAULT_TIME);
 }
 
+/**
+ * Moves the center of the gripper to the specified coordinates Px, Py and Pz, as seen from the base of the robot, and with the desired rotation of the coordinate system
+ * of the gripper, as seen from the coordinate system {1} of the robot. For example, when Rd is an identity matriz of 3x3, the gripper's 
+ * rotation will be such that the orientation of the system {1} and the orientation of the gripper's system will be exactly the same. Thus,
+ * it is harder to obtain solutions for the IK. It uses getIK_Rd. This function affects Q1, Q2, Q3, Q4, and Q5. 
+ * It interpolates the step using the bioloid interpolation with the given time in milliseconds.
+ * If there is no solution for the IK, the arm does not move and a message is printed into the serial monitor.
+*/
 void WidowX::moveArmRd(float Px, float Py, float Pz, Matrix<3, 3> &Rd, int time)
 {
     if (isRelaxed)
@@ -466,6 +559,14 @@ void WidowX::moveArmRd(float Px, float Py, float Pz, Matrix<3, 3> &Rd, int time)
     interpolate(time);
 }
 
+/**
+ * Moves the center of the gripper to the specified coordinates Px, Py and Pz, and with the desired rotation of the coordinate system
+ * of the gripper, as seen from the base of the robot. For example, when Rd is an identity matriz of 3x3, the gripper's 
+ * rotation will be such that the orientation of the system {1} and the orientation of the gripper's system will be exactly the same. Thus,
+ * it is harder to obtain solutions for the IK. It uses getIK_Rd. This function affects Q1, Q2, Q3, Q4, and Q5. 
+ * It interpolates the step using the bioloid interpolation with the default time of 2000 ms.
+ * If there is no solution for the IK, the arm does not move and a message is printed into the serial monitor.
+*/
 void WidowX::moveArmRdBase(float Px, float Py, float Pz, Matrix<3, 3> &RdBase)
 {
     if (isRelaxed)
@@ -480,6 +581,14 @@ void WidowX::moveArmRdBase(float Px, float Py, float Pz, Matrix<3, 3> &RdBase)
     interpolate(DEFAULT_TIME);
 }
 
+/**
+ * Moves the center of the gripper to the specified coordinates Px, Py and Pz, and with the desired rotation of the coordinate system
+ * of the gripper, as seen from the base of the robot. For example, when Rd is an identity matriz of 3x3, the gripper's 
+ * rotation will be such that the orientation of the system {1} and the orientation of the gripper's system will be exactly the same. Thus,
+ * it is harder to obtain solutions for the IK. It uses getIK_Rd. This function affects Q1, Q2, Q3, Q4, and Q5. 
+ * It interpolates the step using the bioloid interpolation with the given time in milliseconds.
+ * If there is no solution for the IK, the arm does not move and a message is printed into the serial monitor.
+*/
 void WidowX::moveArmRdBase(float Px, float Py, float Pz, Matrix<3, 3> &RdBase, int time)
 {
     if (isRelaxed)
