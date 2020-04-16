@@ -7,3 +7,7 @@ Inside some of its functions it uses the Matrix object as defined in [BasicLinea
 ## Installation
 
 Download the WidowX folder and copy it into the Arduino/libraries folder. It should appear in the **include library** section.
+
+## Documentation
+
+In this section the kinematics of the WidowX Rotbot Arm will be described, in order to understand both the indexing in the library and the directions of turn of every motor.
