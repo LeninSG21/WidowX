@@ -34,10 +34,10 @@ void loop()
     switch(option)
     {
       case 0:
-        widow.MoveRest();
+        widow.moveRest();
         break;
       case 1:
-        widow.MoveHome();
+        widow.moveHome();
         break;
       case 2:
         move2Angle();
@@ -49,16 +49,19 @@ void loop()
         move2Point();
         break;
       case 5:
-        moveWrist();
+        MoveWrist();
         break;
       case 6:
-        turnWrist();
+        TurnWrist();
         break;
       case 7:
-        moveGrip();
+        MoveGrip();
+        break;
+      case 8:
+        TryIK();
         break;
       default:
-        widow.MoveCenter();
+        widow.moveCenter();
         break;
     }
     printPoint();
@@ -67,7 +70,37 @@ void loop()
   }
 }
 
-void moveWrist()
+void TryIK()
+{
+  Serial.println("\n***Sequence to try inverse kinematics***");
+  
+  Serial.println("\nIK With Q4");
+  Serial.println("Setting Q4 to -pi/4...");
+  widow.moveServo2Angle(3,-M_PI_4);
+  delay(300);
+  Serial.println("Moving gripper to (0,0,40)...");
+  widow.moveArmQ4(0,0,40);
+  delay(1000);
+  Serial.println("Moving gripper to (15,-15,20) in 4s...");
+  widow.moveArmQ4(0,0,40, 4000);
+  delay(1000);
+  
+  Serial.println("\nIK With Gamma");
+  Serial.println("For Pick N Drop, Gamma = pi/2");
+  Serial.println("Moving gripper to (20,0,10)...");
+  widow.moveArmGamma(20,0,10,M_PI_2);
+  delay(1000);
+  Serial.println("Moving gripper to (15,15,15) in 3s...");
+  widow.moveArmGamma(15,15,15,M_PI_2,3000);
+  delay(1000);
+
+  Serial.println("\nIK with Desired Rotation from {1}");
+  
+  
+  
+}
+
+void MoveWrist()
 {
   Serial.println("\n***Move Wrist***");
   Serial.print("Direction? 0. negative, 1. positive --> ");
@@ -79,14 +112,14 @@ void moveWrist()
   Serial.println("Moving... Send any char to stop");
   while(!Serial.available())
   {
-    widow.MoveWrist(dir);
+    widow.moveWrist(dir);
     delay(30);
   }
   Serial.readString();
     
 }
 
-void turnWrist()
+void TurnWrist()
 {
   Serial.println("\n***Turn Wrist***");
   Serial.print("Direction? 0. negative, 1. positive --> ");
@@ -98,13 +131,13 @@ void turnWrist()
   Serial.println("Moving... Send any char to stop");
   while(!Serial.available())
   {
-    widow.TurnWrist(dir);
+    widow.turnWrist(dir);
     delay(30);
   }
   Serial.readString();
 }
 
-void moveGrip()
+void MoveGrip()
 {
   Serial.println("\n***Turn Wrist***");
   Serial.print("Close? 0. false, 1. true --> ");
@@ -116,7 +149,7 @@ void moveGrip()
   Serial.println("Moving... Send any char to stop");
   while(!Serial.available())
   {
-    widow.MoveGrip(openGrip);
+    widow.moveGrip(openGrip);
     delay(30);
   }
   Serial.readString();
@@ -146,8 +179,7 @@ void move2Point()
   Serial.read();
   Serial.println(pz);
   
-  widow.MoveArm(px,py,pz,2500);
- 
+  widow.moveArmQ4(px,py,pz,2500);
   
 }
 
@@ -164,7 +196,7 @@ void move2Angle()
   float angle = Serial.parseFloat();
   Serial.read();
   Serial.println(angle);
-  widow.MoveServo2Angle(id, angle);
+  widow.moveServo2Angle(id, angle);
 }
 
 void move2Pos()
@@ -180,7 +212,7 @@ void move2Pos()
   int pos = Serial.parseFloat();
   Serial.read();
   Serial.println(pos);
-  widow.MoveServo2Position(id, pos);
+  widow.moveServo2Position(id, pos);
 }
 
 void printPoint()
@@ -203,5 +235,6 @@ void menu()
   Serial.println("5. Move Wrist");
   Serial.println("6. Turn Wrist");
   Serial.println("7. Move Grip");
+  Serial.println("8. Try Inverse Kinematics");
   Serial.println("other. Move Center");
 }
