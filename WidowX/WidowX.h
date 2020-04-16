@@ -80,6 +80,11 @@ public:
     void moveArmRdBase(float Px, float Py, float Pz, Matrix<3, 3> &RdBase);
     void moveArmRdBase(float Px, float Py, float Pz, Matrix<3, 3> &RdBase, int time);
 
+    //Rotations
+    void rotz(float angle, Matrix<3, 3> &Rz);
+    void roty(float angle, Matrix<3, 3> &Ry);
+    void rotx(float angle, Matrix<3, 3> &Rx);
+
 private:
     //Constants
     BioloidController bioloid;
@@ -110,11 +115,6 @@ private:
     uint8_t getIK_Gamma(float Px, float Py, float Pz, float gamma);
     uint8_t getIK_Rd(float Px, float Py, float Pz, Matrix<3, 3> &Rd);
     uint8_t getIK_RdBase(float Px, float Py, float Pz, Matrix<3, 3> &RdBase);
-
-    //Rotations
-    void rotz(float angle, Matrix<3, 3> &Rz);
-    void roty(float angle, Matrix<3, 3> &Ry);
-    void rotx(float angle, Matrix<3, 3> &Rx);
 };
 
 #endif

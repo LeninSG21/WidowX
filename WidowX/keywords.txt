@@ -20,3 +20,6 @@ moveArmQ4		KEYWORD2
 moveArmGamma		KEYWORD2
 moveArmRd		KEYWORD2
 moveArmRdBase		KEYWORD2
+rotx    KEYWORD2
+roty    KEYWORD2
+rotz    KEYWORD2

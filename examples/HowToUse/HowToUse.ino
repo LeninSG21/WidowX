@@ -73,30 +73,37 @@ void loop()
 void TryIK()
 {
   Serial.println("\n***Sequence to try inverse kinematics***");
-  
+  /*
   Serial.println("\nIK With Q4");
   Serial.println("Setting Q4 to -pi/4...");
   widow.moveServo2Angle(3,-M_PI_4);
-  delay(300);
-  Serial.println("Moving gripper to (0,0,40)...");
-  widow.moveArmQ4(0,0,40);
-  delay(1000);
+  delay(3000);
+  Serial.println("Moving gripper to (0,0,30)...");
+  widow.moveArmQ4(0,0,30);
+  delay(5000);
   Serial.println("Moving gripper to (15,-15,20) in 4s...");
-  widow.moveArmQ4(0,0,40, 4000);
-  delay(1000);
+  widow.moveArmQ4(15,-15,20, 4000);
+  delay(5000);
   
   Serial.println("\nIK With Gamma");
   Serial.println("For Pick N Drop, Gamma = pi/2");
   Serial.println("Moving gripper to (20,0,10)...");
-  widow.moveArmGamma(20,0,10,M_PI_2);
-  delay(1000);
+  widow.moveArmGamma(20,0,15,M_PI_2);
+  delay(5000);
   Serial.println("Moving gripper to (15,15,15) in 3s...");
   widow.moveArmGamma(15,15,15,M_PI_2,3000);
-  delay(1000);
-
+  delay(5000);
+*/
   Serial.println("\nIK with Desired Rotation from {1}");
-  
-  
+  Serial.println("With a RotX(pi/2) the Q5 should be pi/2 and the gripper will always have a gamma of 0°");
+  Matrix<3,3> Rd;
+  widow.rotx(M_PI_2, Rd);
+  Serial.println("Moving gripper to (0,0,25)...");
+  widow.moveArmRd(0,0,25,Rd);
+  delay(1000);/*
+  Serial.println("Moving gripper to (15,-10,40) in 3.5s...");
+  widow.moveArmRd(15,-10,40,Rd,3500);
+  */
   
 }
 
