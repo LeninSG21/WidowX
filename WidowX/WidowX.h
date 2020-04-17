@@ -57,6 +57,7 @@ public:
     void checkVoltage();
     void getCurrentPosition();
     int getServoPosition(int idx);
+    float getServoAngle(int idx);
     void getPoint(float *p);
 
     //Torque
@@ -90,6 +91,7 @@ private:
     BioloidController bioloid;
     const uint8_t SERVOCOUNT;
     const float L0, L1, L2, L3, L4, D, alpha;
+    const float sa, ca; //sin(alpha), cos(alpha);
     const int DEFAULT_TIME;
 
     //Variables

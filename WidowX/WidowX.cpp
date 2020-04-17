@@ -36,11 +36,15 @@ using namespace BLA;
 /*
     *** GLOBAL VARIABLES ***
 */
-// float a, b, c, cond;
-// float q1, q2, q3, q4, q5, q6;
-// float phi2;
+float phi2;
+float a, b, c, cond;
+float q1, q2, q3, q4, q5, q6;
 int posQ4, posQ5, posQ6;
 const float limPi_2 = 181 * M_PI / 360;
+const float lim5Pi_6 = 5 * M_PI / 6;
+const float q2Lim[] = {-limPi_2, limPi_2};
+const float q3Lim[] = {-limPi_2, lim5Pi_6};
+const float q4Lim[] = {-11 * M_PI / 18, limPi_2};
 
 //////////////////////////////////////////////////////////////////////////////////////
 /*
@@ -54,8 +58,8 @@ const float limPi_2 = 181 * M_PI / 360;
 */
 WidowX::WidowX()
     : bioloid(BioloidController(1000000)), SERVOCOUNT(6), L0(9), L1(14), L2(5), L3(14),
-      L4(14), D(sqrt(pow(L1, 2) + pow(L2, 2))), alpha(atan2(L1, L2)),
-      isRelaxed(0), DEFAULT_TIME(2000)
+      L4(14), D(sqrt(pow(L1, 2) + pow(L2, 2))), alpha(atan2(L1, L2)), sa(sin(alpha)),
+      ca(cos(alpha)), isRelaxed(0), DEFAULT_TIME(2000)
 {
     bioloid.setup(SERVOCOUNT);
     for (uint8_t i = 0; i < SERVOCOUNT; i++)
@@ -220,22 +224,33 @@ void WidowX::getCurrentPosition()
 */
 int WidowX::getServoPosition(int idx)
 {
-    uint8_t i = 0;
+    uint8_t i = 1;
     current_position[idx] = GetPosition(id[idx]);
     if (current_position[idx] == -1)
     {
-        for (i = 0; i < 5; i++)
+        for (i = 1; i < 6; i++)
         {
             current_position[idx] = GetPosition(id[idx]);
             if (current_position[idx] != -1)
                 break;
             delay(10 * i);
         }
-        if (i == 5)
+        if (i == 6)
             current_position[idx] = angleToPosition(idx, 0);
     }
     current_angle[idx] = positionToAngle(idx, current_position[idx]);
     return current_position[idx];
+}
+
+/**
+ * This function returns the current angle of the specified motor.
+ * It uses getServoPosition() to prevent failure from reading -1 in the current
+ * position
+*/
+float WidowX::getServoAngle(int idx)
+{
+    current_angle[idx] = positionToAngle(idx, getServoPosition(idx));
+    return current_angle[idx];
 }
 
 /*
@@ -444,7 +459,7 @@ void WidowX::moveArmQ4(float Px, float Py, float Pz)
     if (isRelaxed)
         torqueServos();
 
-    if (getIK_Q4(Px, Py, Pz) == 0)
+    if (getIK_Q4(Px, Py, Pz))
     {
         Serial.println("No solution for IK!");
         return;
@@ -464,7 +479,7 @@ void WidowX::moveArmQ4(float Px, float Py, float Pz, int time)
     if (isRelaxed)
         torqueServos();
 
-    if (getIK_Q4(Px, Py, Pz) == 0)
+    if (getIK_Q4(Px, Py, Pz))
     {
         Serial.println("No solution for IK!");
         return;
@@ -485,7 +500,7 @@ void WidowX::moveArmGamma(float Px, float Py, float Pz, float gamma)
     if (isRelaxed)
         torqueServos();
 
-    if (getIK_Gamma(Px, Py, Pz, gamma) == 0)
+    if (getIK_Gamma(Px, Py, Pz, gamma))
     {
         Serial.println("No solution for IK!");
         return;
@@ -506,7 +521,7 @@ void WidowX::moveArmGamma(float Px, float Py, float Pz, float gamma, int time)
     if (isRelaxed)
         torqueServos();
 
-    if (getIK_Gamma(Px, Py, Pz, gamma) == 0)
+    if (getIK_Gamma(Px, Py, Pz, gamma))
     {
         Serial.println("No solution for IK!");
         return;
@@ -528,7 +543,7 @@ void WidowX::moveArmRd(float Px, float Py, float Pz, Matrix<3, 3> &Rd)
     if (isRelaxed)
         torqueServos();
 
-    if (getIK_Rd(Px, Py, Pz, Rd) == 0)
+    if (getIK_Rd(Px, Py, Pz, Rd))
     {
         Serial.println("No solution for IK!");
         return;
@@ -550,7 +565,7 @@ void WidowX::moveArmRd(float Px, float Py, float Pz, Matrix<3, 3> &Rd, int time)
     if (isRelaxed)
         torqueServos();
 
-    if (getIK_Rd(Px, Py, Pz, Rd) == 0)
+    if (getIK_Rd(Px, Py, Pz, Rd))
     {
         Serial.println("No solution for IK!");
         return;
@@ -572,7 +587,7 @@ void WidowX::moveArmRdBase(float Px, float Py, float Pz, Matrix<3, 3> &RdBase)
     if (isRelaxed)
         torqueServos();
 
-    if (getIK_RdBase(Px, Py, Pz, RdBase) == 0)
+    if (getIK_RdBase(Px, Py, Pz, RdBase))
     {
         Serial.println("No solution for IK!");
         return;
@@ -594,7 +609,7 @@ void WidowX::moveArmRdBase(float Px, float Py, float Pz, Matrix<3, 3> &RdBase, i
     if (isRelaxed)
         torqueServos();
 
-    if (getIK_RdBase(Px, Py, Pz, RdBase) == 0)
+    if (getIK_RdBase(Px, Py, Pz, RdBase))
     {
         Serial.println("No solution for IK!");
         return;
@@ -669,7 +684,9 @@ int WidowX::angleToPosition(int idx, float angle)
 void WidowX::interpolate(int time)
 {
     setBioloidPose();
-    delay(200);
+    delay(10);
+    bioloid.readPose();
+    delay(50);
     bioloid.interpolateSetup(time);
     while (bioloid.interpolating > 0)
     {                              // do this while we have not reached our new pose
@@ -682,7 +699,6 @@ void WidowX::setBioloidPose()
 {
     for (uint8_t i = 0; i < SERVOCOUNT; i++)
     {
-        Serial.println(desired_angle[i]);
         desired_position[i] = angleToPosition(i, desired_angle[i]);
         bioloid.setNextPose(id[i], desired_position[i]);
     }
@@ -691,12 +707,12 @@ void WidowX::setBioloidPose()
 void WidowX::getPoint()
 {
     getCurrentPosition();
-    float q1 = current_angle[0];
-    float q2 = current_angle[1];
-    float q3 = current_angle[2];
-    float q4 = current_angle[3];
+    q1 = current_angle[0];
+    q2 = current_angle[1];
+    q3 = current_angle[2];
+    q4 = current_angle[3];
 
-    float phi2 = D * cos(alpha + q2) + L3 * cos(q2 + q3) + L4 * cos(q2 + q3 + q4);
+    phi2 = D * cos(alpha + q2) + L3 * cos(q2 + q3) + L4 * cos(q2 + q3 + q4);
 
     point[0] = cos(q1) * phi2;
     point[1] = sin(q1) * phi2;
@@ -705,202 +721,415 @@ void WidowX::getPoint()
 
 //Inverse Kinematics
 
+// uint8_t WidowX::getIK_Q4(float Px, float Py, float Pz)
+// {
+
+//     const float X = sqrt(pow(Px, 2) + pow(Py, 2));
+//     const float Z = Pz - L0;
+
+//     float q4 = positionToAngle(3, getServoPosition(3));
+//     Serial.print("Q4: ");
+//     Serial.println(q4);
+//     float q5 = positionToAngle(4, getServoPosition(4));
+//     float q6 = positionToAngle(5, getServoPosition(5));
+
+//     const float sa = sin(alpha), ca = cos(alpha);
+//     const float s4 = sin(q4), c4 = cos(q4);
+
+//     //Third articular value
+//     float a = L3 * ca + L4 * ca * c4 + L4 * sa * s4;
+//     float b = L3 * sa - L4 * ca * s4 + L4 * sa * c4;
+//     float c = (pow(X, 2) + pow(Z, 2) - pow(D, 2) - pow(L3, 2) - pow(L4, 2) - 2 * L3 * L4 * c4) / (2 * D);
+//     float cond = pow(a, 2) + pow(b, 2) - pow(c, 2);
+//     if (cond < 0) //No solution to IK
+//         return 0;
+
+//     float q3 = 2 * atan2(b - sqrt(cond), a + c);
+//     q3 = atan2(sin(q3), cos(q3));
+//     Serial.print("Q3: ");
+//     Serial.println(q3);
+
+//     if (q3 > 3 * M_PI_4 || q3 < -limPi_2)
+//     {
+//         q3 = 2 * atan2(b + sqrt(cond), a + c);
+//         q3 = atan2(sin(q3), cos(q3));
+//         if (q3 > 3 * M_PI_4 || q3 < -limPi_2)
+//             return 0;
+//     }
+
+//     //Second aticular value
+//     const float c3 = cos(q3), s3 = sin(q3);
+
+//     a = D * ca + L3 * c3 + L4 * c3 * c4 - L4 * s3 * s4;
+//     b = D * sa + L3 * s3 + L4 * s3 * c4 + L4 * c3 * s4;
+//     float q2 = atan2(a * Z - b * X, a * X + b * Z);
+//     Serial.print("Q2: ");
+//     Serial.println(q2);
+//     if (abs(q2) > limPi_2)
+//         return 0;
+
+//     float q1 = atan2(Py, Px);
+//     Serial.print("Q1: ");
+//     Serial.println(q1);
+
+//     desired_angle[0] = q1;
+//     desired_angle[1] = q2;
+//     desired_angle[2] = q3;
+//     desired_angle[3] = q4;
+//     desired_angle[4] = q5;
+//     desired_angle[5] = q6;
+
+//     return 1;
+// }
+
+/**
+ * Obtains the IK when Q4 is constants. Returns 0 if succeeds, returns 1 if fails
+*/
 uint8_t WidowX::getIK_Q4(float Px, float Py, float Pz)
 {
+    //Obtain q1
+    q1 = atan2(Py, Px);
 
+    //Obtain point as seen from {1}
     const float X = sqrt(pow(Px, 2) + pow(Py, 2));
     const float Z = Pz - L0;
 
-    float q4 = positionToAngle(3, getServoPosition(3));
-    Serial.print("Q4: ");
-    Serial.println(q4);
-    float q5 = positionToAngle(4, getServoPosition(4));
-    float q6 = positionToAngle(5, getServoPosition(5));
-
-    const float sa = sin(alpha), ca = cos(alpha);
+    //Read the angle of the fourth motor (q4) and obtain its sine and cosine
+    q4 = getServoAngle(3);
     const float s4 = sin(q4), c4 = cos(q4);
 
-    //Third articular value
-    float a = L3 * ca + L4 * ca * c4 + L4 * sa * s4;
-    float b = L3 * sa - L4 * ca * s4 + L4 * sa * c4;
-    float c = (pow(X, 2) + pow(Z, 2) - pow(D, 2) - pow(L3, 2) - pow(L4, 2) - 2 * L3 * L4 * c4) / (2 * D);
-    float cond = pow(a, 2) + pow(b, 2) - pow(c, 2);
-    if (cond < 0) //No solution to IK
-        return 0;
+    //Calculate the parameters needed to obtain q3
+    a = L3 * ca + L4 * ca * c4 + L4 * sa * s4;
+    b = L3 * sa - L4 * ca * s4 + L4 * sa * c4;
+    c = (pow(X, 2) + pow(Z, 2) - pow(D, 2) - pow(L3, 2) - pow(L4, 2) - 2 * L3 * L4 * c4) / (2 * D);
+    cond = pow(a, 2) + pow(b, 2) - pow(c, 2);
+    if (cond < 0)
+        return 1; //No solution for the IK
 
-    float q3 = 2 * atan2(b - sqrt(cond), a + c);
+    //Obtain q3
+    q3 = 2 * atan2(b - sqrt(cond), a + c);
     q3 = atan2(sin(q3), cos(q3));
-    Serial.print("Q3: ");
-    Serial.println(q3);
+    uint8_t tryTwice = 1;
 
-    if (q3 > 3 * M_PI_4 || q3 < -limPi_2)
+    //Check q3 limits
+    if (q3 < q3Lim[0] || q3 > q3Lim[1])
     {
+        //Try with the other possible solution for q3
         q3 = 2 * atan2(b + sqrt(cond), a + c);
         q3 = atan2(sin(q3), cos(q3));
-        if (q3 > 3 * M_PI_4 || q3 < -limPi_2)
-            return 0;
+        if (q3 < q3Lim[0] || q3 > q3Lim[1])
+            return 1;
+        tryTwice = 0;
     }
 
-    //Second aticular value
-    const float c3 = cos(q3), s3 = sin(q3);
+    float c3, s3;
+    for (;;)
+    {
+        c3 = cos(q3);
+        s3 = sin(q3);
+        a = D * ca + L3 * c3 + L4 * c3 * c4 - L4 * s3 * s4;
+        b = D * sa + L3 * s3 + L4 * s3 * c4 + L4 * c3 * s4;
+        q2 = atan2(a * Z - b * X, a * X + b * Z);
 
-    a = D * ca + L3 * c3 + L4 * c3 * c4 - L4 * s3 * s4;
-    b = D * sa + L3 * s3 + L4 * s3 * c4 + L4 * c3 * s4;
-    float q2 = atan2(a * Z - b * X, a * X + b * Z);
-    Serial.print("Q2: ");
-    Serial.println(q2);
-    if (abs(q2) > limPi_2)
-        return 0;
+        if (q2 < q2Lim[0] || q2 > q2Lim[1])
+        {
+            if (tryTwice)
+            {
+                //Try with the other possible solution for q3
+                q3 = 2 * atan2(b + sqrt(cond), a + c);
+                q3 = atan2(sin(q3), cos(q3));
+                if (q3 < q3Lim[0] || q3 > q3Lim[1])
+                    //One value of q3 is possible but yields out of range value for q2
+                    //and the other value of q3 exceeds q3's limits. Ends function
+                    return 1;
 
-    float q1 = atan2(Py, Px);
-    Serial.print("Q1: ");
-    Serial.println(q1);
+                //Check with the other possible value of q3 if there's a solution for q2
+                tryTwice = 0;
+                continue;
+            }
+            else
+                //Possible value for q2 doesn't exist with any of q3 possible values
+                //Ends function
+                return 1;
+        }
+        //Possible value for q2 exists. Breaks loop
+        break;
+    }
 
+    //Save articular values into the array that will set the next positions
     desired_angle[0] = q1;
     desired_angle[1] = q2;
     desired_angle[2] = q3;
     desired_angle[3] = q4;
-    desired_angle[4] = q5;
-    desired_angle[5] = q6;
-
-    return 1;
+    desired_angle[4] = getServoAngle(4);
+    desired_angle[5] = getServoAngle(5);
+    //Returns with success
+    return 0;
 }
 
+// uint8_t WidowX::getIK_Gamma(float Px, float Py, float Pz, float gamma)
+// {
+//     float X = sqrt(pow(Px, 2) + pow(Py, 2));
+//     float Z = Pz - L0;
+
+//     const float sa = sin(alpha), ca = cos(alpha);
+//     const float sg = sin(gamma), cg = cos(gamma);
+
+//     X = X - L4 * cg;
+//     Z = Z + L4 * sg;
+
+//     float c = (pow(X, 2) + pow(Z, 2) - pow(D, 2) - pow(L3, 2)) / (2 * D * L3);
+//     if (abs(c) > 1)
+//         return 0;
+
+//     float q3 = alpha + acos(c);
+//     q3 = atan2(sin(q3), cos(q3));
+
+//     if (q3 > 3 * M_PI_4 || q3 < -limPi_2)
+//     {
+//         q3 = alpha - acos(c);
+//         q3 = atan2(sin(q3), cos(q3));
+//         if (q3 > 3 * M_PI_4 || q3 < -limPi_2)
+//             return 0; //No hay solución por la geometría del brazo
+//     }
+
+//     const float c3 = cos(q3), s3 = sin(q3);
+//     float a = D * ca + L3 * c3;
+//     float b = D * sa + L3 * s3;
+//     float q2 = atan2(a * Z - b * X, a * X + b * Z);
+//     if (abs(q2) > limPi_2)
+//         return 0;
+//     float q4 = -gamma - q2 - q3;
+//     if (abs(q4) > limPi_2)
+//         return 0;
+
+//     float q1 = atan2(Py, Px);
+
+//     Serial.print("Q1: ");
+//     Serial.println(q1);
+//     Serial.print("Q2: ");
+//     Serial.println(q2);
+//     Serial.print("Q3: ");
+//     Serial.println(q3);
+//     Serial.print("Q4: ");
+//     Serial.println(q4);
+
+//     desired_angle[0] = q1;
+//     desired_angle[1] = q2;
+//     desired_angle[2] = q3;
+//     desired_angle[3] = q4;
+//     desired_angle[4] = positionToAngle(4, getServoPosition(4));
+//     desired_angle[5] = positionToAngle(5, getServoPosition(5));
+
+//     return 1;
+// }
+/**
+ * Obtains the IK with a desired angle gamma for the gripper. 
+ * Returns 0 if succeeds, returns 1 if fails
+*/
 uint8_t WidowX::getIK_Gamma(float Px, float Py, float Pz, float gamma)
 {
-    float X = sqrt(pow(Px, 2) + pow(Py, 2));
-    float Z = Pz - L0;
-
-    const float sa = sin(alpha), ca = cos(alpha);
+    //Calculate sine and cosine of gamma
     const float sg = sin(gamma), cg = cos(gamma);
 
-    X = X - L4 * cg;
-    Z = Z + L4 * sg;
+    //Obtain the desired point as seen from {1}
+    const float X = sqrt(pow(Px, 2) + pow(Py, 2)) - L4 * cg;
+    const float Z = Pz - L0 + L4 * sg;
 
-    float c = (pow(X, 2) + pow(Z, 2) - pow(D, 2) - pow(L3, 2)) / (2 * D * L3);
+    //Obtain q1
+    q1 = atan2(Py, Px);
+
+    //calculate condition for q3
+    c = (pow(X, 2) + pow(Z, 2) - pow(D, 2) - pow(L3, 2)) / (2 * D * L3);
+
     if (abs(c) > 1)
-        return 0;
+        return 1;
 
-    float q3 = alpha + acos(c);
+    q3 = alpha + acos(c);
     q3 = atan2(sin(q3), cos(q3));
+    uint8_t tryTwice = 1;
 
-    if (q3 > 3 * M_PI_4 || q3 < -limPi_2)
+    //Check q3 limits
+    if (q3 < q3Lim[0] || q3 > q3Lim[1])
     {
+        //Try with the other possible solution for q3
         q3 = alpha - acos(c);
         q3 = atan2(sin(q3), cos(q3));
-        if (q3 > 3 * M_PI_4 || q3 < -limPi_2)
-            return 0; //No hay solución por la geometría del brazo
+        if (q3 < q3Lim[0] || q3 > q3Lim[1])
+            return 1;
+        tryTwice = 0;
     }
 
-    const float c3 = cos(q3), s3 = sin(q3);
-    float a = D * ca + L3 * c3;
-    float b = D * sa + L3 * s3;
-    float q2 = atan2(a * Z - b * X, a * X + b * Z);
-    if (abs(q2) > limPi_2)
-        return 0;
-    float q4 = -gamma - q2 - q3;
-    if (abs(q4) > limPi_2)
-        return 0;
+    float c3, s3;
+    for (;;)
+    {
+        c3 = cos(q3);
+        s3 = sin(q3);
+        a = D * ca + L3 * c3;
+        b = D * sa + L3 * s3;
+        q2 = atan2(a * Z - b * X, a * X + b * Z);
 
-    float q1 = atan2(Py, Px);
+        if (q2 < q2Lim[0] || q2 > q2Lim[1])
+        {
+            if (tryTwice)
+            {
+                //Try with the other possible solution for q3
+                q3 = alpha - acos(c);
+                q3 = atan2(sin(q3), cos(q3));
+                if (q3 < q3Lim[0] || q3 > q3Lim[1])
+                    //One value of q3 is possible but yields out of range value for q2
+                    //and the other value of q3 exceeds q3's limits. Ends function
+                    return 1;
 
-    Serial.print("Q1: ");
-    Serial.println(q1);
-    Serial.print("Q2: ");
-    Serial.println(q2);
-    Serial.print("Q3: ");
-    Serial.println(q3);
-    Serial.print("Q4: ");
-    Serial.println(q4);
+                //Check with the other possible value of q3 if there's a solution for q2
+                tryTwice = 0;
+                continue;
+            }
+            else
+                //Possible value for q2 doesn't exist with any of q3 possible values
+                //Ends function
+                return 1;
+        }
 
+        q4 = -gamma - q2 - q3;
+
+        if (q4 < q4Lim[0] || q4 > q4Lim[1])
+        {
+            if (tryTwice)
+            {
+                //Try with the other possible solution for q3
+                q3 = alpha - acos(c);
+                q3 = atan2(sin(q3), cos(q3));
+                if (q3 < q3Lim[0] || q3 > q3Lim[1])
+                    //One value of q3 is possible but yields out of range value for q4
+                    //and the other value of q3 exceeds q3's limits. Ends function
+                    return 1;
+
+                //Check with the other possible value of q3 if there's a solution for q4
+                tryTwice = 0;
+                continue;
+            }
+            else
+                //Possible value for q4 doesn't exist with any of q3 possible values
+                //Ends function
+                return 1;
+        }
+        //Possible value for q2 and q4 exists. Breaks loop
+        break;
+    }
+
+    //Save articular values into the array that will set the next positions
     desired_angle[0] = q1;
     desired_angle[1] = q2;
     desired_angle[2] = q3;
     desired_angle[3] = q4;
-    desired_angle[4] = positionToAngle(4, getServoPosition(4));
-    desired_angle[5] = positionToAngle(5, getServoPosition(5));
-
-    return 1;
+    desired_angle[4] = getServoAngle(4);
+    desired_angle[5] = getServoAngle(5);
+    //Returns with success
+    return 0;
 }
+
+// uint8_t WidowX::getIK_Rd(float Px, float Py, float Pz, Matrix<3, 3> &Rd)
+// {
+//     float X = sqrt(pow(Px, 2) + pow(Py, 2));
+//     float Z = Pz - L0;
+
+//     const float sa = sin(alpha), ca = cos(alpha);
+//     const float sg = -Rd(2, 0), cg = Rd(0, 0);
+
+//     float c = (pow(X, 2) + pow(Z, 2) - pow(D, 2) - pow(L3, 2)) / (2 * D * L3);
+//     if (abs(c) > 1)
+//         return 0;
+
+//     float q3 = alpha + acos(c);
+//     q3 = atan2(sin(q3), cos(q3));
+
+//     if (q3 > 3 * M_PI_4 || q3 < -limPi_2)
+//     {
+//         q3 = alpha - acos(c);
+//         q3 = atan2(sin(q3), cos(q3));
+//         if (q3 > 3 * M_PI_4 || q3 < -limPi_2)
+//             return 0; //No hay solución por la geometría del brazo
+//     }
+
+//     const float c3 = cos(q3), s3 = sin(q3);
+//     float a = D * ca + L3 * c3;
+//     float b = D * sa + L3 * s3;
+//     float q2 = atan2(a * Z - b * X, a * X + b * Z);
+//     if (abs(q2) > limPi_2)
+//         return 0;
+
+//     float gamma = atan2(sg, cg);
+//     float q4 = -gamma - q2 - q3;
+
+//     if (abs(q4) > limPi_2)
+//         return 0;
+
+//     float q1 = atan2(Py, Px);
+
+//     Matrix<3, 3> RyGamma;
+//     roty(gamma, RyGamma);
+//     Invert(RyGamma);
+//     Matrix<3, 3> Rx5 = RyGamma * Rd;
+//     float q5 = atan2(Rx5(2, 1), Rx5(1, 1));
+
+//     if (abs(q5) > 5 * M_PI / 6)
+//     {
+//         if (q5 < 0)
+//             q5 = -5 * M_PI / 6;
+//         else
+//             q5 = 5 * M_PI / 6;
+//     }
+//     Serial.print("Q1: ");
+//     Serial.println(q1);
+//     Serial.print("Q2: ");
+//     Serial.println(q2);
+//     Serial.print("Q3: ");
+//     Serial.println(q3);
+//     Serial.print("Q4: ");
+//     Serial.println(q4);
+//     Serial.print("Q5: ");
+//     Serial.println(q5);
+
+//     desired_angle[0] = q1;
+//     desired_angle[1] = q2;
+//     desired_angle[2] = q3;
+//     desired_angle[3] = q4;
+//     desired_angle[4] = q5;
+//     desired_angle[5] = positionToAngle(5, getServoPosition(5));
+
+//     return 1;
+// }
 
 uint8_t WidowX::getIK_Rd(float Px, float Py, float Pz, Matrix<3, 3> &Rd)
 {
-    float X = sqrt(pow(Px, 2) + pow(Py, 2));
-    float Z = Pz - L0;
+    const float gamma = atan2(-Rd(2, 0), Rd(0, 0));
 
-    const float sa = sin(alpha), ca = cos(alpha);
-    const float sg = -Rd(2, 0), cg = Rd(0, 0);
+    //Do getIK_Gamma and check if it succeeds. If not, it returns 1
+    if (getIK_Gamma(Px, Py, Pz, gamma))
+        return 1;
 
-    float c = (pow(X, 2) + pow(Z, 2) - pow(D, 2) - pow(L3, 2)) / (2 * D * L3);
-    if (abs(c) > 1)
-        return 0;
-
-    float q3 = alpha + acos(c);
-    q3 = atan2(sin(q3), cos(q3));
-
-    if (q3 > 3 * M_PI_4 || q3 < -limPi_2)
-    {
-        q3 = alpha - acos(c);
-        q3 = atan2(sin(q3), cos(q3));
-        if (q3 > 3 * M_PI_4 || q3 < -limPi_2)
-            return 0; //No hay solución por la geometría del brazo
-    }
-
-    const float c3 = cos(q3), s3 = sin(q3);
-    float a = D * ca + L3 * c3;
-    float b = D * sa + L3 * s3;
-    float q2 = atan2(a * Z - b * X, a * X + b * Z);
-    if (abs(q2) > limPi_2)
-        return 0;
-
-    float gamma = atan2(sg, cg);
-    float q4 = -gamma - q2 - q3;
-
-    if (abs(q4) > limPi_2)
-        return 0;
-
-    float q1 = atan2(Py, Px);
-
+    //Obtain the matrixes to calculate q5
     Matrix<3, 3> RyGamma;
     roty(gamma, RyGamma);
     Invert(RyGamma);
     Matrix<3, 3> Rx5 = RyGamma * Rd;
-    float q5 = atan2(Rx5(2, 1), Rx5(1, 1));
+    q5 = atan2(Rx5(2, 1), Rx5(1, 1));
 
-    if (abs(q5) > 5 * M_PI / 6)
-    {
-        if (q5 < 0)
-            q5 = -5 * M_PI / 6;
-        else
-            q5 = 5 * M_PI / 6;
-    }
-    Serial.print("Q1: ");
-    Serial.println(q1);
-    Serial.print("Q2: ");
-    Serial.println(q2);
-    Serial.print("Q3: ");
-    Serial.println(q3);
-    Serial.print("Q4: ");
-    Serial.println(q4);
-    Serial.print("Q5: ");
-    Serial.println(q5);
-
-    desired_angle[0] = q1;
-    desired_angle[1] = q2;
-    desired_angle[2] = q3;
-    desired_angle[3] = q4;
+    //Save q5 into the desired_angle array. the other values
+    //Have already been saved by getIKGamma
     desired_angle[4] = q5;
-    desired_angle[5] = positionToAngle(5, getServoPosition(5));
 
-    return 1;
+    return 0;
 }
 
 uint8_t WidowX::getIK_RdBase(float Px, float Py, float Pz, Matrix<3, 3> &RdBase)
 {
-
-    float q1 = atan2(Py, Px);
+    //Obtain the desired rotation as seen from {1} to use it with getIK_Rd
+    q1 = atan2(Py, Px);
     Matrix<3, 3> RzQ1;
     rotz(q1, RzQ1);
+    Inverse(RzQ1);
     Matrix<3, 3> Rd = RzQ1 * RdBase;
 
     return getIK_Rd(Px, Py, Pz, Rd);
