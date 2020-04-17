@@ -99,17 +99,20 @@ void TryIK()
   widow.rotx(M_PI_2, Rd);
   Serial.println("Moving gripper to (0,0,28)...");
   widow.moveArmRd(0, 0, 28, Rd);
-  delay(1000);
+  delay(5000);
   Serial.println("Moving gripper to (15,-10,35) in 3.5s...");
   widow.moveArmRd(15, -10, 35, Rd, 3500);
-
+  delay(5000);
+  
   Serial.println("\nIK with Desired Rotation from base");
   Serial.println("With a RotY(-pi/2) the gripper should be looking up and the q5 will be adjusted to represent solely a rotation in 'y'");
   Matrix<3, 3> RdBase;
   widow.roty(-M_PI_2, RdBase);
   Serial.println("Moving gripper to (13,10,40)...");
-  widow.moveArmRd(13, 10, 40, RdBase);
-  delay(1000);
+  widow.moveArmRdBase(13, 10, 40, RdBase);
+  delay(5000);
+
+  widow.moveRest();
 }
 
 void MoveWrist()

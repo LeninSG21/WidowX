@@ -111,6 +111,7 @@ private:
     void interpolate(int time);
     void setBioloidPose();
     void getPoint();
+    void intCubica(Matrix<4> &params, Matrix<4> &a, int time);
 
     //Inverse Kinematics
     uint8_t getIK_Q4(float Px, float Py, float Pz);
