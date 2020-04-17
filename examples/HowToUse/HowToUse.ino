@@ -19,6 +19,11 @@ void setup()
   delay(300);
 
   widow.init();
+  Matrix<4> params = {512,2048,25,0};
+  Matrix<4> a = widow.intCubica(params, 2);
+  Serial << a <<"\n";
+  while(1);
+  
   delay(1000);
   //Serial.print("Px: ");
   menu();

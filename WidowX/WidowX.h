@@ -86,6 +86,8 @@ public:
     void roty(float angle, Matrix<3, 3> &Ry);
     void rotx(float angle, Matrix<3, 3> &Rx);
 
+    Matrix<4> cubeInterpolation(Matrix<4> &params, int time);
+
 private:
     //Constants
     BioloidController bioloid;
@@ -111,7 +113,6 @@ private:
     void interpolate(int time);
     void setBioloidPose();
     void getPoint();
-    void intCubica(Matrix<4> &params, Matrix<4> &a, int time);
 
     //Inverse Kinematics
     uint8_t getIK_Q4(float Px, float Py, float Pz);

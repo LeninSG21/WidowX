@@ -719,8 +719,17 @@ void WidowX::getPoint()
     point[2] = L0 + D * sin(alpha + q2) + L3 * sin(q2 + q3) + L4 * sin(q2 + q3 + q4);
 }
 
-void intCubica(Matrix<4> &params, Matrix<4> &a, int time)
+Matrix<4> WidowX::cubeInterpolation(Matrix<4> &params, int time)
 {
+    const float tf_1_2 = 1 / pow(time, 2);
+    const float tf_2_3 = 2 / pow(time, 3);
+    const float tf_3_2 = 3 * tf_1_2;
+
+    Matrix<4, 4> M_inv = {1, 0, 0, 0,
+                          0, 0, 1, 0,
+                          -tf_3_2, tf_3_2, -2 / time, -1 / time,
+                          tf_2_3, -tf_2_3, tf_1_2, tf_1_2};
+    return M_inv * params;
 }
 
 //Inverse Kinematics
