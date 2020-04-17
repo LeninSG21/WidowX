@@ -1129,7 +1129,7 @@ uint8_t WidowX::getIK_RdBase(float Px, float Py, float Pz, Matrix<3, 3> &RdBase)
     q1 = atan2(Py, Px);
     Matrix<3, 3> RzQ1;
     rotz(q1, RzQ1);
-    Inverse(RzQ1);
+    Invert(RzQ1);
     Matrix<3, 3> Rd = RzQ1 * RdBase;
 
     return getIK_Rd(Px, Py, Pz, Rd);
