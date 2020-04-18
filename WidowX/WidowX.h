@@ -18,9 +18,7 @@
  * This will also change the id inside the bioloid controller, since this one also
  * needs the id array to be handled properly. To check that the id was set correctly,
  * the getId function can be used: getId(2) --> 16. If the function returns the expected
- * if, you're good to go. Howevere, if the return value is -1, it means that there was a 
- * problem when setting the id of the bioloid controller, so the setId operation should 
- * be done once again.
+ * if, you're good to go.
  */
 
 #ifndef WidowX_h

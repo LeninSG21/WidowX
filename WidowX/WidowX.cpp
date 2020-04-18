@@ -18,9 +18,7 @@
  * This will also change the id inside the bioloid controller, since this one also
  * needs the id array to be handled properly. To check that the id was set correctly,
  * the getId function can be used: getId(2) --> 16. If the function returns the expected
- * if, you're good to go. Howevere, if the return value is -1, it means that there was a 
- * problem when setting the id of the bioloid controller, so the setId operation should 
- * be done once again.
+ * if, you're good to go.
  */
 #include "Arduino.h"
 #include "WidowX.h"
@@ -187,9 +185,6 @@ void WidowX::getCurrentPosition()
  * mover times. If in those tries the value is still -1, then the postion is assumed to be 0.
  * That way, the movement will be better than with the position at -1. Due to this check conditions,+
  * this function is preferred over the readPose() function from the BioloidController.h library.
- * NOTE: Since this function is not used in the predefined movement positions (moveHome, moveCenter and moveRest),
- * there is a chance that the arm will move drastically since the bioloid function does not check 
- * said condition.
 */
 int WidowX::getServoPosition(int idx)
 {
@@ -420,7 +415,7 @@ void WidowX::moveGrip(int close)
 /**
  * Moves the center of the gripper to the specified coordinates Px, Py and Pz, as seen from the base of the robot.
  * It uses getIK_Q4, so it moves the arm while maintaining the position of the fourth motor (wrist). This function
- * only affects Q1, Q2 and Q3. It interpolates the step using the bioloid interpolation with the default time of 2000 ms.
+ * only affects Q1, Q2 and Q3. It interpolates the step using a cubic interpolation with the default time.
  * If there is no solution for the IK, the arm does not move and a message is printed into the serial monitor.
 */
 void WidowX::moveArmQ4(float Px, float Py, float Pz)
@@ -442,7 +437,7 @@ void WidowX::moveArmQ4(float Px, float Py, float Pz)
 /**
  * Moves the center of the gripper to the specified coordinates Px, Py and Pz, as seen from the base of the robot.
  * It uses getIK_Q4, so it moves the arm while maintaining the position of the fourth motor (wrist). This function
- * only affects Q1, Q2 and Q3. It interpolates the step using the bioloid interpolation with the given time in milliseconds.
+ * only affects Q1, Q2 and Q3. It interpolates the step using a cubic interpolation with the given time in milliseconds.
  * If there is no solution for the IK, the arm does not move and a message is printed into the serial monitor.
 */
 void WidowX::moveArmQ4(float Px, float Py, float Pz, int time)
@@ -466,7 +461,7 @@ void WidowX::moveArmQ4(float Px, float Py, float Pz, int time)
  * Moves the center of the gripper to the specified coordinates Px, Py and Pz, as seen from the base of the robot, with the 
  * desired angle gamma of the gripper. For example, gamma = pi/2 will make the arm a Pick N Drop since the gripper will be heading
  * to the floor. It uses getIK_Gamma. This function only affects Q1, Q2, Q3, and Q4. 
- * It interpolates the step using the bioloid interpolation with the default time of 2000 ms.
+ *  It interpolates the step using a cubic interpolation with the default time.
  * If there is no solution for the IK, the arm does not move and a message is printed into the serial monitor.
 */
 void WidowX::moveArmGamma(float Px, float Py, float Pz, float gamma)
@@ -488,7 +483,7 @@ void WidowX::moveArmGamma(float Px, float Py, float Pz, float gamma)
  * Moves the center of the gripper to the specified coordinates Px, Py and Pz, as seen from the base of the robot, with the 
  * desired angle gamma of the gripper. For example, gamma = pi/2 will make the arm a Pick N Drop since the gripper will be heading
  * to the floor. It uses getIK_Gamma. This function only affects Q1, Q2, Q3, and Q4. 
- * It interpolates the step using the bioloid interpolation with the given time in milliseconds.
+ * It interpolates the step using a cubic interpolation with the given time in milliseconds.
  * If there is no solution for the IK, the arm does not move and a message is printed into the serial monitor.
 */
 void WidowX::moveArmGamma(float Px, float Py, float Pz, float gamma, int time)
@@ -512,7 +507,7 @@ void WidowX::moveArmGamma(float Px, float Py, float Pz, float gamma, int time)
  * of the gripper, as seen from the coordinate system {1} of the robot. For example, when Rd is an identity matriz of 3x3, the gripper's 
  * rotation will be such that the orientation of the system {1} and the orientation of the gripper's system will be exactly the same. Thus,
  * it is harder to obtain solutions for the IK. It uses getIK_Rd. This function affects Q1, Q2, Q3, Q4, and Q5. 
- * It interpolates the step using the bioloid interpolation with the default time of 2000 ms.
+ * It interpolates the step using a cubic interpolation with the deault time.
  * If there is no solution for the IK, the arm does not move and a message is printed into the serial monitor.
 */
 void WidowX::moveArmRd(float Px, float Py, float Pz, Matrix<3, 3> &Rd)
@@ -534,7 +529,7 @@ void WidowX::moveArmRd(float Px, float Py, float Pz, Matrix<3, 3> &Rd)
  * of the gripper, as seen from the coordinate system {1} of the robot. For example, when Rd is an identity matriz of 3x3, the gripper's 
  * rotation will be such that the orientation of the system {1} and the orientation of the gripper's system will be exactly the same. Thus,
  * it is harder to obtain solutions for the IK. It uses getIK_Rd. This function affects Q1, Q2, Q3, Q4, and Q5. 
- * It interpolates the step using the bioloid interpolation with the given time in milliseconds.
+ * It interpolates the step using a cubic interpolation with the given time in milliseconds.
  * If there is no solution for the IK, the arm does not move and a message is printed into the serial monitor.
 */
 void WidowX::moveArmRd(float Px, float Py, float Pz, Matrix<3, 3> &Rd, int time)
@@ -557,7 +552,7 @@ void WidowX::moveArmRd(float Px, float Py, float Pz, Matrix<3, 3> &Rd, int time)
  * of the gripper, as seen from the base of the robot. For example, when Rd is an identity matriz of 3x3, the gripper's 
  * rotation will be such that the orientation of the system {1} and the orientation of the gripper's system will be exactly the same. Thus,
  * it is harder to obtain solutions for the IK. It uses getIK_Rd. This function affects Q1, Q2, Q3, Q4, and Q5. 
- * It interpolates the step using the bioloid interpolation with the default time of 2000 ms.
+ * It interpolates the step using a cubic interpolation with the default time.
  * If there is no solution for the IK, the arm does not move and a message is printed into the serial monitor.
 */
 void WidowX::moveArmRdBase(float Px, float Py, float Pz, Matrix<3, 3> &RdBase)
@@ -580,7 +575,7 @@ void WidowX::moveArmRdBase(float Px, float Py, float Pz, Matrix<3, 3> &RdBase)
  * of the gripper, as seen from the base of the robot. For example, when Rd is an identity matriz of 3x3, the gripper's 
  * rotation will be such that the orientation of the system {1} and the orientation of the gripper's system will be exactly the same. Thus,
  * it is harder to obtain solutions for the IK. It uses getIK_Rd. This function affects Q1, Q2, Q3, Q4, and Q5. 
- * It interpolates the step using the bioloid interpolation with the given time in milliseconds.
+ * It interpolates the step using a cubic interpolation with the given time in milliseconds.
  * If there is no solution for the IK, the arm does not move and a message is printed into the serial monitor.
 */
 void WidowX::moveArmRdBase(float Px, float Py, float Pz, Matrix<3, 3> &RdBase, int time)
