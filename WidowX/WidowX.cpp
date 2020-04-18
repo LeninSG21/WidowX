@@ -116,27 +116,16 @@ int WidowX::getId(int idx)
 /*
  * Moves to the arm to the center of all motors, forming an upside L. As seen from 
  * the kinematic analysis done for this library, it would be equal to setting al
- * articular values to 0°. Gets the current position once it's done.
+ * articular values to 0°.  Reads the pose from PROGMEM. Gets the current position once it's done.
 */
 void WidowX::moveCenter()
 {
     getCurrentPosition();
     interpolateFromPose(Center, DEFAULT_TIME);
-    // delay(100);               // recommended pause
-    // bioloid.loadPose(Center); // load the pose from FLASH, into the nextPose buffer
-    // bioloid.readPose();       // read in current servo positions to the curPose buffer
-    // delay(1000);
-    // bioloid.interpolateSetup(1000); // setup for interpolation from current->next over 1/2 a second
-    // while (bioloid.interpolating > 0)
-    // {                              // do this while we have not reached our new pose
-    //     bioloid.interpolateStep(); // move servos, if necessary.
-
-    //     delay(3);
-    // }
     getCurrentPosition();
 }
 /*
- * Moves to the arm to the home position as defined by the bioloid controller.
+ * Moves to the arm to the home position as defined by the bioloid controller. Reads the pose from PROGMEM
  * Gets the current position once it's done.
 */
 void WidowX::moveHome()
@@ -144,23 +133,11 @@ void WidowX::moveHome()
 
     getCurrentPosition();
     interpolateFromPose(Home, DEFAULT_TIME);
-
-    // delay(100);             // recommended pause
-    // bioloid.loadPose(Home); // load the pose from FLASH, into the nextPose buffer
-    // bioloid.readPose();     // read in current servo positions to the curPose buffer
-    // delay(1000);
-    // bioloid.interpolateSetup(1000); // setup for interpolation from current->next over 1/2 a second
-    // while (bioloid.interpolating > 0)
-    // {                              // do this while we have not reached our new pose
-    //     bioloid.interpolateStep(); // move servos, if necessary.
-
-    //     delay(3);
-    // }
     getCurrentPosition();
 }
 
 /*
- * Moves to the arm to the rest position, which is when the arm is resting over itself.
+ * Moves to the arm to the rest position, which is when the arm is resting over itself. Reads the pose from PROGMEM
  * Gets the current position once it's done.
  * 
 */
@@ -168,17 +145,6 @@ void WidowX::moveRest()
 {
     getCurrentPosition();
     interpolateFromPose(Rest, DEFAULT_TIME);
-    // delay(100);             // recommended pause
-    // bioloid.loadPose(Rest); // load the pose from FLASH, into the nextPose buffer
-    // bioloid.readPose();     // read in current servo positions to the curPose buffer
-    // delay(1000);
-    // bioloid.interpolateSetup(1000); // setup for interpolation from current->next over 1/2 a second
-    // while (bioloid.interpolating > 0)
-    // {                              // do this while we have not reached our new pose
-    //     bioloid.interpolateStep(); // move servos, if necessary.
-
-    //     delay(3);
-    // }
     getCurrentPosition();
 }
 
@@ -479,7 +445,6 @@ void WidowX::moveArmQ4(float Px, float Py, float Pz)
     }
 
     interpolate(DEFAULT_TIME);
-    // bioloidInterpolate(DEFAULT_TIME);
 }
 
 /**
@@ -503,7 +468,6 @@ void WidowX::moveArmQ4(float Px, float Py, float Pz, int time)
 
     remainingTime = time - (millis() - t0);
     interpolate(remainingTime);
-    // bioloidInterpolate(time);
 }
 
 /**
@@ -526,7 +490,6 @@ void WidowX::moveArmGamma(float Px, float Py, float Pz, float gamma)
     }
 
     interpolate(DEFAULT_TIME);
-    // bioloidInterpolate(DEFAULT_TIME);
 }
 
 /**
@@ -550,7 +513,6 @@ void WidowX::moveArmGamma(float Px, float Py, float Pz, float gamma, int time)
 
     remainingTime = time - (millis() - t0);
     interpolate(remainingTime);
-    // bioloidInterpolate(time);
 }
 
 /**
@@ -573,7 +535,6 @@ void WidowX::moveArmRd(float Px, float Py, float Pz, Matrix<3, 3> &Rd)
         return;
     }
     interpolate(DEFAULT_TIME);
-    // bioloidInterpolate(DEFAULT_TIME);
 }
 
 /**
@@ -597,7 +558,6 @@ void WidowX::moveArmRd(float Px, float Py, float Pz, Matrix<3, 3> &Rd, int time)
     }
     remainingTime = time - (millis() - t0);
     interpolate(remainingTime);
-    // bioloidInterpolate(time);
 }
 
 /**
@@ -621,7 +581,6 @@ void WidowX::moveArmRdBase(float Px, float Py, float Pz, Matrix<3, 3> &RdBase)
     }
 
     interpolate(DEFAULT_TIME);
-    // bioloidInterpolate(DEFAULT_TIME);
 }
 
 /**
@@ -646,7 +605,6 @@ void WidowX::moveArmRdBase(float Px, float Py, float Pz, Matrix<3, 3> &RdBase, i
 
     remainingTime = time - (millis() - t0);
     interpolate(remainingTime);
-    // bioloidInterpolate(time);
 }
 
 //Rotations
@@ -770,85 +728,34 @@ void WidowX::cubeInterpolation(Matrix<4> &params, float *w, int time)
 
 void WidowX::interpolate(int remTime)
 {
-    // Serial.println("*******interpolate******");
     uint8_t i;
     Matrix<4> params;
     for (i = 0; i < SERVOCOUNT - 1; i++)
     {
-        // Serial.print(i);
-        // Serial.print("--> ");
         desired_position[i] = angleToPosition(i, desired_angle[i]);
-        // Serial.println(desired_position[i]);
         params(0) = current_position[i];
         params(1) = desired_position[i];
         params(2) = 0;
         params(3) = 0;
 
-        // Serial << params << "\n";
         cubeInterpolation(params, W[i], remTime);
-        // Serial.print(i);
-        // Serial.print(": {");
-        // Serial.print(W[i][0]);
-        // Serial.print(", ");
-        // Serial.print(W[i][1]);
-        // Serial.print(", ");
-        // Serial.print(W[i][2]);
-        // Serial.print(", ");
-        // Serial.print(W[i][3]);
-        // Serial.println("}");
     }
-
-    // Serial.println("Done with cube interpolation");
 
     t0 = millis();
     currentTime = millis() - t0;
     while (currentTime < remTime)
     {
-        // Serial.print("current time: ");
-        // Serial.println(currentTime);
         curr_2 = pow(currentTime, 2);
         curr_3 = pow(currentTime, 3);
-        // Serial.println();
         for (i = 0; i < SERVOCOUNT - 1; i++)
         {
-
-            // Serial.print(i);
-            // Serial.print("@");
-            // Serial.print(currentTime);
-            // Serial.print(": ");
-            // Serial.println(W[i][0] + W[i][1] * currentTime + W[i][2] * curr_2 + W[i][3] * curr_3);
             next_position[i] = round(W[i][0] + W[i][1] * currentTime + W[i][2] * curr_2 + W[i][3] * curr_3);
+            SetPosition(id[i], next_position[i]);
         }
-        // Serial.print("\nNext Q1 --> ");
-        // Serial.println(next_position[0]);
-        // Serial.print("Next Q2 --> ");
-        // Serial.println(next_position[1]);
-        // Serial.print("Next Q3 --> ");
-        // Serial.println(next_position[2]);
-        // Serial.print("Next Q4 --> ");
-        // Serial.println(next_position[3]);
-        // Serial.print("Next Q5 --> ");
-        // Serial.println(next_position[4]);
-        SetPosition(id[0], next_position[0]);
-        SetPosition(id[1], next_position[1]);
-        SetPosition(id[2], next_position[2]);
-        SetPosition(id[3], next_position[3]);
-        SetPosition(id[4], next_position[4]);
+
         delay(10);
         currentTime = millis() - t0;
     }
-
-    // Serial.println("Finally...");
-    // Serial.print("Next Q1 --> ");
-    // Serial.println(desired_position[0]);
-    // Serial.print("Next Q2 --> ");
-    // Serial.println(desired_position[1]);
-    // Serial.print("Next Q3 --> ");
-    // Serial.println(desired_position[2]);
-    // Serial.print("Next Q4 --> ");
-    // Serial.println(desired_position[3]);
-    // Serial.print("Next Q5 --> ");
-    // Serial.println(desired_position[4]);
 
     SetPosition(id[0], desired_position[0]);
     SetPosition(id[1], desired_position[1]);
@@ -860,86 +767,34 @@ void WidowX::interpolate(int remTime)
 
 void WidowX::interpolateFromPose(const unsigned int *pose, int remTime)
 {
-    // Serial.println("*******interpolate******");
     uint8_t i;
     Matrix<4> params;
     for (i = 0; i < SERVOCOUNT; i++)
     {
-        // Serial.print(i);
-        // Serial.print("--> ");
         desired_position[i] = pgm_read_word_near(pose + i);
-        // Serial.println(desired_position[i]);
         params(0) = current_position[i];
         params(1) = desired_position[i];
         params(2) = 0;
         params(3) = 0;
 
-        // Serial << params << "\n";
         cubeInterpolation(params, W[i], remTime);
-        // Serial.print(i);
-        // Serial.print(": {");
-        // Serial.print(W[i][0]);
-        // Serial.print(", ");
-        // Serial.print(W[i][1]);
-        // Serial.print(", ");
-        // Serial.print(W[i][2]);
-        // Serial.print(", ");
-        // Serial.print(W[i][3]);
-        // Serial.println("}");
     }
-
-    // Serial.println("Done with cube interpolation");
 
     t0 = millis();
     currentTime = millis() - t0;
     while (currentTime < remTime)
     {
-        // Serial.print("current time: ");
-        // Serial.println(currentTime);
         curr_2 = pow(currentTime, 2);
         curr_3 = pow(currentTime, 3);
-        // Serial.println();
         for (i = 0; i < SERVOCOUNT; i++)
         {
-
-            // Serial.print(i);
-            // Serial.print("@");
-            // Serial.print(currentTime);
-            // Serial.print(": ");
-            // Serial.println(W[i][0] + W[i][1] * currentTime + W[i][2] * curr_2 + W[i][3] * curr_3);
             next_position[i] = round(W[i][0] + W[i][1] * currentTime + W[i][2] * curr_2 + W[i][3] * curr_3);
+            SetPosition(id[i], next_position[i]);
         }
-        // Serial.print("\nNext Q1 --> ");
-        // Serial.println(next_position[0]);
-        // Serial.print("Next Q2 --> ");
-        // Serial.println(next_position[1]);
-        // Serial.print("Next Q3 --> ");
-        // Serial.println(next_position[2]);
-        // Serial.print("Next Q4 --> ");
-        // Serial.println(next_position[3]);
-        // Serial.print("Next Q5 --> ");
-        // Serial.println(next_position[4]);
-        SetPosition(id[0], next_position[0]);
-        SetPosition(id[1], next_position[1]);
-        SetPosition(id[2], next_position[2]);
-        SetPosition(id[3], next_position[3]);
-        SetPosition(id[4], next_position[4]);
-        SetPosition(id[5], next_position[5]);
+
         delay(10);
         currentTime = millis() - t0;
     }
-
-    // Serial.println("Finally...");
-    // Serial.print("Next Q1 --> ");
-    // Serial.println(desired_position[0]);
-    // Serial.print("Next Q2 --> ");
-    // Serial.println(desired_position[1]);
-    // Serial.print("Next Q3 --> ");
-    // Serial.println(desired_position[2]);
-    // Serial.print("Next Q4 --> ");
-    // Serial.println(desired_position[3]);
-    // Serial.print("Next Q5 --> ");
-    // Serial.println(desired_position[4]);
 
     SetPosition(id[0], desired_position[0]);
     SetPosition(id[1], desired_position[1]);
