@@ -12,15 +12,35 @@ float point[] = {0, 0, 0};
 
 int option = 1;
 
+/*
+ *  float w[2][4];
+  Matrix<4> p1 = {500, 2200, 0, 0};
+  Matrix<4> p2 = {4000, 1520, 0, 0};
+  widow.cubeInterpolation(p1, w[0], 2);
+  widow.cubeInterpolation(p2, w[1], 2);
+
+  delay(10);
+  Serial.print("0: {");Serial.print(w[0][0]);Serial.print(", ");
+  Serial.print(w[0][1]);Serial.print(", ");
+  Serial.print(w[0][2]);Serial.print(", ");
+  Serial.print(w[0][3]);Serial.println("}");
+  Serial.print("1: {");Serial.print(w[1][0]);Serial.print(", ");
+  Serial.print(w[1][1]);Serial.print(", ");
+  Serial.print(w[1][2]);Serial.print(", ");
+  Serial.print(w[1][3]);Serial.println("}");
+ */
+
 void setup()
 {
   Serial.begin(9600);
   Serial.println("...Starting Robotic Arm...");
   delay(300);
-  
   widow.init();
   delay(1000);
-  
+  widow.moveRest();
+  delay(500);
+  //widow.moveArmQ4(15,15,15);
+  //while(1);
   menu();
 }
 
@@ -199,7 +219,7 @@ void move2Point()
   Serial.read();
   Serial.println(pz);
 
-  widow.moveArmQ4(px, py, pz);
+  widow.moveArmQ4(px, py, pz,3000);
 }
 
 void move2Angle()
