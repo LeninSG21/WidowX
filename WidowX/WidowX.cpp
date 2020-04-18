@@ -45,6 +45,9 @@ const float lim5Pi_6 = 5 * M_PI / 6;
 const float q2Lim[] = {-limPi_2, limPi_2};
 const float q3Lim[] = {-limPi_2, lim5Pi_6};
 const float q4Lim[] = {-11 * M_PI / 18, limPi_2};
+long t0;
+int currentTime, remainingTime;
+int curr_2, curr_3;
 
 //////////////////////////////////////////////////////////////////////////////////////
 /*
@@ -459,13 +462,14 @@ void WidowX::moveArmQ4(float Px, float Py, float Pz)
     if (isRelaxed)
         torqueServos();
 
+    getCurrentPosition();
     if (getIK_Q4(Px, Py, Pz))
     {
         Serial.println("No solution for IK!");
         return;
     }
-
-    interpolate(DEFAULT_TIME);
+    // interpolate(DEFAULT_TIME);
+    bioloidInterpolate(DEFAULT_TIME);
 }
 
 /**
@@ -479,13 +483,14 @@ void WidowX::moveArmQ4(float Px, float Py, float Pz, int time)
     if (isRelaxed)
         torqueServos();
 
+    getCurrentPosition();
     if (getIK_Q4(Px, Py, Pz))
     {
         Serial.println("No solution for IK!");
         return;
     }
 
-    interpolate(time);
+    bioloidInterpolate(time);
 }
 
 /**
@@ -500,13 +505,14 @@ void WidowX::moveArmGamma(float Px, float Py, float Pz, float gamma)
     if (isRelaxed)
         torqueServos();
 
+    getCurrentPosition();
     if (getIK_Gamma(Px, Py, Pz, gamma))
     {
         Serial.println("No solution for IK!");
         return;
     }
 
-    interpolate(DEFAULT_TIME);
+    bioloidInterpolate(DEFAULT_TIME);
 }
 
 /**
@@ -521,13 +527,14 @@ void WidowX::moveArmGamma(float Px, float Py, float Pz, float gamma, int time)
     if (isRelaxed)
         torqueServos();
 
+    getCurrentPosition();
     if (getIK_Gamma(Px, Py, Pz, gamma))
     {
         Serial.println("No solution for IK!");
         return;
     }
 
-    interpolate(time);
+    bioloidInterpolate(time);
 }
 
 /**
@@ -543,13 +550,14 @@ void WidowX::moveArmRd(float Px, float Py, float Pz, Matrix<3, 3> &Rd)
     if (isRelaxed)
         torqueServos();
 
+    getCurrentPosition();
     if (getIK_Rd(Px, Py, Pz, Rd))
     {
         Serial.println("No solution for IK!");
         return;
     }
 
-    interpolate(DEFAULT_TIME);
+    bioloidInterpolate(DEFAULT_TIME);
 }
 
 /**
@@ -565,13 +573,14 @@ void WidowX::moveArmRd(float Px, float Py, float Pz, Matrix<3, 3> &Rd, int time)
     if (isRelaxed)
         torqueServos();
 
+    getCurrentPosition();
     if (getIK_Rd(Px, Py, Pz, Rd))
     {
         Serial.println("No solution for IK!");
         return;
     }
 
-    interpolate(time);
+    bioloidInterpolate(time);
 }
 
 /**
@@ -587,13 +596,14 @@ void WidowX::moveArmRdBase(float Px, float Py, float Pz, Matrix<3, 3> &RdBase)
     if (isRelaxed)
         torqueServos();
 
+    getCurrentPosition();
     if (getIK_RdBase(Px, Py, Pz, RdBase))
     {
         Serial.println("No solution for IK!");
         return;
     }
 
-    interpolate(DEFAULT_TIME);
+    bioloidInterpolate(DEFAULT_TIME);
 }
 
 /**
@@ -609,13 +619,14 @@ void WidowX::moveArmRdBase(float Px, float Py, float Pz, Matrix<3, 3> &RdBase, i
     if (isRelaxed)
         torqueServos();
 
+    getCurrentPosition();
     if (getIK_RdBase(Px, Py, Pz, RdBase))
     {
         Serial.println("No solution for IK!");
         return;
     }
 
-    interpolate(time);
+    bioloidInterpolate(time);
 }
 
 //Rotations
@@ -681,7 +692,7 @@ int WidowX::angleToPosition(int idx, float angle)
 }
 
 //Poses and interpolation
-void WidowX::interpolate(int time)
+void WidowX::bioloidInterpolate(int time)
 {
     setBioloidPose();
     delay(10);
@@ -732,6 +743,64 @@ Matrix<4> WidowX::cubeInterpolation(Matrix<4> &params, int time)
     return M_inv * params;
 }
 
+void WidowX::interpolate(int remTime)
+{
+    uint8_t i;
+    for (i = 0; i < SERVOCOUNT - 1; i++)
+    {
+        desired_position[i] = angleToPosition(i, desired_angle[i]);
+        a[i] = cubeInterpolation({current_position[i], desired_position[i], 0, 0}, remainingTime);
+    }
+
+    t0 = millis();
+    currentTime = millis() - t0;
+    while (currentTime < remTime)
+    {
+        curr_2 = pow(currentTime, 2);
+        curr_3 = pow(currentTime, 3);
+        for (i = 0; i < SERVOCOUNT - 1; i++)
+        {
+            next_position[i] = round(a[i](0) + a[i](1) * currentTime + a[i](2) * curr_2 + a[i](3) * curr_3);
+        }
+        Serial.print("Next Q1 --> ");
+        Serial.println(next_position[0]);
+        Serial.print("Next Q2 --> ");
+        Serial.println(next_position[1]);
+        Serial.print("Next Q3 --> ");
+        Serial.println(next_position[2]);
+        Serial.print("Next Q4 --> ");
+        Serial.println(next_position[3]);
+        Serial.print("Next Q5 --> ");
+        Serial.println(next_position[4]);
+        // SetPosition(id[0], next_position[0]);
+        // SetPosition(id[1], next_position[1]);
+        // SetPosition(id[2], next_position[2]);
+        // SetPosition(id[3], next_position[3]);
+        // SetPosition(id[4], next_position[4]);
+        delay(3);
+        currentTime = millis() - t0;
+    }
+
+    Serial.println("Finally...");
+    Serial.print("Next Q1 --> ");
+    Serial.println(next_position[0]);
+    Serial.print("Next Q2 --> ");
+    Serial.println(next_position[1]);
+    Serial.print("Next Q3 --> ");
+    Serial.println(next_position[2]);
+    Serial.print("Next Q4 --> ");
+    Serial.println(next_position[3]);
+    Serial.print("Next Q5 --> ");
+    Serial.println(next_position[4]);
+
+    // SetPosition(id[0], desired_position[0]);
+    // SetPosition(id[1], desired_position[1]);
+    // SetPosition(id[2], desired_position[2]);
+    // SetPosition(id[3], desired_position[3]);
+    // SetPosition(id[4], desired_position[4]);
+    delay(3);
+}
+
 //Inverse Kinematics
 
 /**
@@ -747,7 +816,7 @@ uint8_t WidowX::getIK_Q4(float Px, float Py, float Pz)
     const float Z = Pz - L0;
 
     //Read the angle of the fourth motor (q4) and obtain its sine and cosine
-    q4 = getServoAngle(3);
+    q4 = current_angle[3]; //getServoAngle(3);
     const float s4 = sin(q4), c4 = cos(q4);
 
     //Calculate the parameters needed to obtain q3
@@ -813,8 +882,8 @@ uint8_t WidowX::getIK_Q4(float Px, float Py, float Pz)
     desired_angle[1] = q2;
     desired_angle[2] = q3;
     desired_angle[3] = q4;
-    desired_angle[4] = getServoAngle(4);
-    desired_angle[5] = getServoAngle(5);
+    desired_angle[4] = current_angle[5]; //getServoAngle(4);
+    desired_angle[5] = current_angle[6]; //getServoAngle(5);
     //Returns with success
     return 0;
 }
@@ -919,8 +988,8 @@ uint8_t WidowX::getIK_Gamma(float Px, float Py, float Pz, float gamma)
     desired_angle[1] = q2;
     desired_angle[2] = q3;
     desired_angle[3] = q4;
-    desired_angle[4] = getServoAngle(4);
-    desired_angle[5] = getServoAngle(5);
+    desired_angle[4] = current_angle[5]; //getServoAngle(4);
+    desired_angle[5] = current_angle[6]; //getServoAngle(5);
     //Returns with success
     return 0;
 }
