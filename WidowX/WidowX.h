@@ -88,7 +88,6 @@ public:
 
 private:
     //Constants
-    BioloidController bioloid;
     const uint8_t SERVOCOUNT;
     const float L0, L1, L2, L3, L4, D, alpha;
     const float sa, ca; //sin(alpha), cos(alpha);
@@ -110,8 +109,6 @@ private:
     int angleToPosition(int idx, float angle);
 
     //Poses and interpolation
-    void bioloidInterpolate(int time);
-    void setBioloidPose();
     void getPoint();
     void cubeInterpolation(Matrix<4> &params, float *w, int time);
     void interpolate(int remainingTime);

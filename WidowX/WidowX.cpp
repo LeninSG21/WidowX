@@ -60,11 +60,11 @@ float curr_2, curr_3;
  * servo count to 6, and fills the id array from 1 to 6.
 */
 WidowX::WidowX()
-    : bioloid(BioloidController(1000000)), SERVOCOUNT(6), L0(9), L1(14), L2(5), L3(14),
+    : SERVOCOUNT(6), L0(9), L1(14), L2(5), L3(14),
       L4(14), D(sqrt(pow(L1, 2) + pow(L2, 2))), alpha(atan2(L1, L2)), sa(sin(alpha)),
       ca(cos(alpha)), isRelaxed(0), DEFAULT_TIME(2000)
 {
-    bioloid.setup(SERVOCOUNT);
+
     for (uint8_t i = 0; i < SERVOCOUNT; i++)
     {
         id[i] = i + 1;
@@ -94,22 +94,14 @@ void WidowX::setId(int idx, int newID)
     if (idx < 0 || idx >= SERVOCOUNT)
         return;
     id[idx] = newID;
-    bioloid.setId(idx, newID);
 }
 
 /*
- * Gets the id of the specified motor by idx. It checks that both the bioloid
- * controller and the id array at the given index have the same value, to assure
- * that it works properly. If both value are the same, it returns the id; 
- * however, if they are different it returns -1 and the setId operation should be 
- * tried once again
+ * Gets the id of the specified motor by idx.
 */
 int WidowX::getId(int idx)
 {
-    if (bioloid.getId(idx) == id[idx])
-        return id[idx];
-    else
-        return -1;
+    return id[idx];
 }
 
 //Preloaded Positions
@@ -670,28 +662,6 @@ int WidowX::angleToPosition(int idx, float angle)
 }
 
 //Poses and interpolation
-void WidowX::bioloidInterpolate(int time)
-{
-    setBioloidPose();
-    delay(10);
-    bioloid.readPose();
-    delay(50);
-    bioloid.interpolateSetup(time);
-    while (bioloid.interpolating > 0)
-    {                              // do this while we have not reached our new pose
-        bioloid.interpolateStep(); // move servos, if necessary.
-        delay(3);
-    }
-}
-
-void WidowX::setBioloidPose()
-{
-    for (uint8_t i = 0; i < SERVOCOUNT; i++)
-    {
-        desired_position[i] = angleToPosition(i, desired_angle[i]);
-        bioloid.setNextPose(id[i], desired_position[i]);
-    }
-}
 
 void WidowX::getPoint()
 {
