@@ -97,11 +97,11 @@ private:
     //Variables
     uint8_t id[6];
     uint8_t isRelaxed;
-    int current_position[6];
+    uint16_t current_position[6];
     float current_angle[6];
     float desired_angle[6];
-    int desired_position[6];
-    int next_position[6];
+    uint16_t desired_position[6];
+    uint16_t next_position[6];
     float point[3];
     float W[6][4];
 
@@ -115,7 +115,7 @@ private:
     void getPoint();
     void cubeInterpolation(Matrix<4> &params, float *w, int time);
     void interpolate(int remainingTime);
-    void interpolateFromPose(float *pose, int remainingTime);
+    void interpolateFromPose(const unsigned int *pose, int remainingTime);
 
     //Inverse Kinematics
     uint8_t getIK_Q4(float Px, float Py, float Pz);

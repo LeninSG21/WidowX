@@ -36,11 +36,7 @@ void setup()
   Serial.println("...Starting Robotic Arm...");
   delay(300);
   widow.init();
-  delay(1000);
-  widow.moveRest();
-  delay(500);
-  //widow.moveArmQ4(15,15,15);
-  //while(1);
+  delay(100);
   menu();
 }
 

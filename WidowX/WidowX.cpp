@@ -120,17 +120,19 @@ int WidowX::getId(int idx)
 */
 void WidowX::moveCenter()
 {
-    delay(100);               // recommended pause
-    bioloid.loadPose(Center); // load the pose from FLASH, into the nextPose buffer
-    bioloid.readPose();       // read in current servo positions to the curPose buffer
-    delay(1000);
-    bioloid.interpolateSetup(1000); // setup for interpolation from current->next over 1/2 a second
-    while (bioloid.interpolating > 0)
-    {                              // do this while we have not reached our new pose
-        bioloid.interpolateStep(); // move servos, if necessary.
+    getCurrentPosition();
+    interpolateFromPose(Center, DEFAULT_TIME);
+    // delay(100);               // recommended pause
+    // bioloid.loadPose(Center); // load the pose from FLASH, into the nextPose buffer
+    // bioloid.readPose();       // read in current servo positions to the curPose buffer
+    // delay(1000);
+    // bioloid.interpolateSetup(1000); // setup for interpolation from current->next over 1/2 a second
+    // while (bioloid.interpolating > 0)
+    // {                              // do this while we have not reached our new pose
+    //     bioloid.interpolateStep(); // move servos, if necessary.
 
-        delay(3);
-    }
+    //     delay(3);
+    // }
     getCurrentPosition();
 }
 /*
@@ -139,17 +141,21 @@ void WidowX::moveCenter()
 */
 void WidowX::moveHome()
 {
-    delay(100);             // recommended pause
-    bioloid.loadPose(Home); // load the pose from FLASH, into the nextPose buffer
-    bioloid.readPose();     // read in current servo positions to the curPose buffer
-    delay(1000);
-    bioloid.interpolateSetup(1000); // setup for interpolation from current->next over 1/2 a second
-    while (bioloid.interpolating > 0)
-    {                              // do this while we have not reached our new pose
-        bioloid.interpolateStep(); // move servos, if necessary.
 
-        delay(3);
-    }
+    getCurrentPosition();
+    interpolateFromPose(Home, DEFAULT_TIME);
+
+    // delay(100);             // recommended pause
+    // bioloid.loadPose(Home); // load the pose from FLASH, into the nextPose buffer
+    // bioloid.readPose();     // read in current servo positions to the curPose buffer
+    // delay(1000);
+    // bioloid.interpolateSetup(1000); // setup for interpolation from current->next over 1/2 a second
+    // while (bioloid.interpolating > 0)
+    // {                              // do this while we have not reached our new pose
+    //     bioloid.interpolateStep(); // move servos, if necessary.
+
+    //     delay(3);
+    // }
     getCurrentPosition();
 }
 
@@ -160,17 +166,19 @@ void WidowX::moveHome()
 */
 void WidowX::moveRest()
 {
-    delay(100);             // recommended pause
-    bioloid.loadPose(Rest); // load the pose from FLASH, into the nextPose buffer
-    bioloid.readPose();     // read in current servo positions to the curPose buffer
-    delay(1000);
-    bioloid.interpolateSetup(1000); // setup for interpolation from current->next over 1/2 a second
-    while (bioloid.interpolating > 0)
-    {                              // do this while we have not reached our new pose
-        bioloid.interpolateStep(); // move servos, if necessary.
+    getCurrentPosition();
+    interpolateFromPose(Rest, DEFAULT_TIME);
+    // delay(100);             // recommended pause
+    // bioloid.loadPose(Rest); // load the pose from FLASH, into the nextPose buffer
+    // bioloid.readPose();     // read in current servo positions to the curPose buffer
+    // delay(1000);
+    // bioloid.interpolateSetup(1000); // setup for interpolation from current->next over 1/2 a second
+    // while (bioloid.interpolating > 0)
+    // {                              // do this while we have not reached our new pose
+    //     bioloid.interpolateStep(); // move servos, if necessary.
 
-        delay(3);
-    }
+    //     delay(3);
+    // }
     getCurrentPosition();
 }
 
@@ -850,16 +858,16 @@ void WidowX::interpolate(int remTime)
     delay(3);
 }
 
-void WidowX::interpolateFromPose(int remTime)
+void WidowX::interpolateFromPose(const unsigned int *pose, int remTime)
 {
     // Serial.println("*******interpolate******");
     uint8_t i;
     Matrix<4> params;
-    for (i = 0; i < SERVOCOUNT - 1; i++)
+    for (i = 0; i < SERVOCOUNT; i++)
     {
         // Serial.print(i);
         // Serial.print("--> ");
-        desired_position[i] = angleToPosition(i, desired_angle[i]);
+        desired_position[i] = pgm_read_word_near(pose + i);
         // Serial.println(desired_position[i]);
         params(0) = current_position[i];
         params(1) = desired_position[i];
@@ -891,7 +899,7 @@ void WidowX::interpolateFromPose(int remTime)
         curr_2 = pow(currentTime, 2);
         curr_3 = pow(currentTime, 3);
         // Serial.println();
-        for (i = 0; i < SERVOCOUNT - 1; i++)
+        for (i = 0; i < SERVOCOUNT; i++)
         {
 
             // Serial.print(i);
@@ -916,6 +924,7 @@ void WidowX::interpolateFromPose(int remTime)
         SetPosition(id[2], next_position[2]);
         SetPosition(id[3], next_position[3]);
         SetPosition(id[4], next_position[4]);
+        SetPosition(id[5], next_position[5]);
         delay(10);
         currentTime = millis() - t0;
     }
@@ -937,6 +946,7 @@ void WidowX::interpolateFromPose(int remTime)
     SetPosition(id[2], desired_position[2]);
     SetPosition(id[3], desired_position[3]);
     SetPosition(id[4], desired_position[4]);
+    SetPosition(id[5], desired_position[5]);
     delay(3);
 }
 
