@@ -463,11 +463,13 @@ void WidowX::moveArmQ4(float Px, float Py, float Pz)
         torqueServos();
 
     getCurrentPosition();
+
     if (getIK_Q4(Px, Py, Pz))
     {
         Serial.println("No solution for IK!");
         return;
     }
+
     // interpolate(DEFAULT_TIME);
     bioloidInterpolate(DEFAULT_TIME);
 }
@@ -730,7 +732,7 @@ void WidowX::getPoint()
     point[2] = L0 + D * sin(alpha + q2) + L3 * sin(q2 + q3) + L4 * sin(q2 + q3 + q4);
 }
 
-Matrix<4> WidowX::cubeInterpolation(Matrix<4> &params, int time)
+void WidowX::cubeInterpolation(Matrix<4> &params, Matrix<4> &Wi, int time)
 {
     const float tf_1_2 = 1 / pow(time, 2);
     const float tf_2_3 = 2 / pow(time, 3);
@@ -740,17 +742,27 @@ Matrix<4> WidowX::cubeInterpolation(Matrix<4> &params, int time)
                           0, 0, 1, 0,
                           -tf_3_2, tf_3_2, -2 / time, -1 / time,
                           tf_2_3, -tf_2_3, tf_1_2, tf_1_2};
-    return M_inv * params;
+    Multiply(M_inv, params, Wi);
+    return;
 }
 
 void WidowX::interpolate(int remTime)
 {
+    Serial.println("*******interpolate******");
     uint8_t i;
+    Matrix<4> params;
     for (i = 0; i < SERVOCOUNT - 1; i++)
     {
         desired_position[i] = angleToPosition(i, desired_angle[i]);
-        a[i] = cubeInterpolation({current_position[i], desired_position[i], 0, 0}, remainingTime);
+        params(0) = current_position[i];
+        params(1) = desired_position[i];
+        params(2) = 0;
+        params(3) = 0;
+
+        cubeInterpolation(params, W[i], remainingTime);
     }
+
+    Serial.println("Done with cube interpolation");
 
     t0 = millis();
     currentTime = millis() - t0;
@@ -760,7 +772,7 @@ void WidowX::interpolate(int remTime)
         curr_3 = pow(currentTime, 3);
         for (i = 0; i < SERVOCOUNT - 1; i++)
         {
-            next_position[i] = round(a[i](0) + a[i](1) * currentTime + a[i](2) * curr_2 + a[i](3) * curr_3);
+            next_position[i] = round(W[i](0) + W[i](1) * currentTime + W[i](2) * curr_2 + W[i](3) * curr_3);
         }
         Serial.print("Next Q1 --> ");
         Serial.println(next_position[0]);

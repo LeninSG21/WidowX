@@ -103,7 +103,7 @@ private:
     int desired_position[6];
     int next_position[6];
     float point[3];
-    Matrix<4> a[];
+    Matrix<4> *W;
 
     //Conversions
     float positionToAngle(int idx, int position);
@@ -113,7 +113,7 @@ private:
     void bioloidInterpolate(int time);
     void setBioloidPose();
     void getPoint();
-    Matrix<4> cubeInterpolation(Matrix<4> &params, int time);
+    void cubeInterpolation(Matrix<4> &params, Matrix<4> &Wi, int time);
     void interpolate(int remainingTime);
 
     //Inverse Kinematics

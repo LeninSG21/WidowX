@@ -17,15 +17,10 @@ void setup()
   Serial.begin(9600);
   Serial.println("...Starting Robotic Arm...");
   delay(300);
-
-  widow.init();
-  Matrix<4> params = {512,2048,25,0};
-  Matrix<4> a = widow.intCubica(params, 2);
-  Serial << a <<"\n";
-  while(1);
   
+  widow.init();
   delay(1000);
-  //Serial.print("Px: ");
+  
   menu();
 }
 
@@ -204,7 +199,7 @@ void move2Point()
   Serial.read();
   Serial.println(pz);
 
-  widow.moveArmQ4(px, py, pz, 2500);
+  widow.moveArmQ4(px, py, pz);
 }
 
 void move2Angle()
