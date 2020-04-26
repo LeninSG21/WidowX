@@ -40,7 +40,7 @@ class WidowX
 public:
     //INITIALIAZERS
     WidowX();
-    void init();
+    void init(uint8_t relax);
 
     //ID HANDLERS
     void setId(int idx, int newID);
@@ -68,8 +68,10 @@ public:
     void moveWrist(int direction);
     void turnWrist(int direction);
     void moveGrip(int close);
+    void setServo2Position(int idx, int position);
 
     //Move Arm
+    void setArmGamma(float Px, float Py, float Pz, float gamma);
     void moveArmQ4(float Px, float Py, float Pz);
     void moveArmQ4(float Px, float Py, float Pz, int time);
     void moveArmGamma(float Px, float Py, float Pz, float gamma);

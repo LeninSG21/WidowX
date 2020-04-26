@@ -74,13 +74,14 @@ WidowX::WidowX()
  * rest position and it disables the torque to save energy. It also checks the 
  * voltage with the function checkVoltage(). 
 */
-void WidowX::init()
+void WidowX::init(uint8_t relax)
 {
     delay(10);
     checkVoltage();
     moveRest();
     delay(100);
-    relaxServos();
+    if (relax)
+        relaxServos();
 }
 
 //ID HANDLERS
@@ -192,14 +193,14 @@ int WidowX::getServoPosition(int idx)
     current_position[idx] = GetPosition(id[idx]);
     if (current_position[idx] == -1)
     {
-        for (i = 1; i < 6; i++)
+        for (i = 1; i < 10; i++)
         {
             current_position[idx] = GetPosition(id[idx]);
             if (current_position[idx] != -1)
                 break;
             delay(10 * i);
         }
-        if (i == 6)
+        if (i == 10)
             current_position[idx] = angleToPosition(idx, 0);
     }
     current_angle[idx] = positionToAngle(idx, current_position[idx]);
@@ -384,7 +385,7 @@ void WidowX::moveGrip(int close)
     posQ6 = getServoPosition(5);
     if (close)
     {
-        if (posQ6 < 10)
+        if (posQ6 > 10)
         {
             posQ6 -= 10;
         }
@@ -411,7 +412,39 @@ void WidowX::moveGrip(int close)
     SetPosition(id[5], posQ6);
 }
 
+/**
+ * Sets the specified servo to the given position without a smooth tansition.
+ * Designed to be used with a controller.
+*/
+void WidowX::setServo2Position(int idx, int position)
+{
+    SetPosition(id[idx], position);
+}
+
 //Move Arm
+/**
+ * Moves the center of the gripper to the specified coordinates Px, Py and Pz, as seen from the base of the robot, with the 
+ * desired angle gamma of the gripper. For example, gamma = pi/2 will make the arm a Pick N Drop since the gripper will be heading
+ * to the floor. It uses getIK_Gamma. This function only affects Q1, Q2, Q3, and Q4. 
+ * It does not interpolate the step, since it is designed to be used by a controller that will move the arm
+ * smoothly. If there is no solution for the IK, the arm does not move.
+*/
+void WidowX::setArmGamma(float Px, float Py, float Pz, float gamma)
+{
+    if (isRelaxed)
+        torqueServos();
+
+    getCurrentPosition();
+    if (getIK_Gamma(Px, Py, Pz, gamma))
+        return;
+
+    for (int i = 0; i < 4; i++)
+    {
+        desired_position[i] = angleToPosition(i, desired_angle[i]);
+        SetPosition(id[i], desired_position[i]);
+    }
+}
+
 /**
  * Moves the center of the gripper to the specified coordinates Px, Py and Pz, as seen from the base of the robot.
  * It uses getIK_Q4, so it moves the arm while maintaining the position of the fourth motor (wrist). This function

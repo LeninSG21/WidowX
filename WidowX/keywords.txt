@@ -16,6 +16,8 @@ moveServo2Position	KEYWORD2
 moveWrist	KEYWORD2
 turnWrist	KEYWORD2
 moveGrip	KEYWORD2
+setServo2Position	KEYWORD2
+setArmGamma	KEYWORD2
 moveArmQ4		KEYWORD2
 moveArmGamma		KEYWORD2
 moveArmRd		KEYWORD2

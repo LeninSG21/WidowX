@@ -1,16 +1,43 @@
 # -*- coding: utf-8 -*-
 import serial
-import os
 import struct 
 import time
 
+"""
+byte index
+
+0 --> report index
+1 --> L X axis
+2 --> L Y axis
+3 --> R X axis
+4 --> R Y axis
+5 --> triangle << 7 | circle << 6 | cross << 5 | square << 4 || D-PAD: hat format
+                                                                0x08 --> released
+                                                                0x07 --> NW
+                                                                0x06 --> W
+                                                                0x05 --> SW
+                                                                0x04 --> S
+                                                                0x03 --> SE
+                                                                0x02 --> E
+                                                                0x01 --> NE
+                                                                0x00 --> N
+6 --> R3 << 7 | L3 << 6 | Options << 5 | Share << 4 | R2 << 3 | L2 << 2 | R1 << 1 | L1
+7 --> Counter << 2 | T-PAD click << 1 | PS-Button
+8 --> L2 Trigger
+9 --> R2 Trigger
+12 --> Battery Level
+
+Check full HID Data Format for DS4 @ https://www.psdevwiki.com/ps4/DS4-USB
+"""
+
 #Global variables
 f = open("/dev/hidraw2", "rb") #HID File where ds4 event is registered
+widow = serial.Serial("/dev/ttyUSB0",115200);
 Px = 0 #Point in X from base [cm]
 Py = 0 #Point in Y from base [cm]
 Pz = 0 #Point in Z from base [cm]
 Gamma = 0 #Gamma angle from base_y [°]
-Q5 = 0 #Position of the fifth motor from 0 to 1023 (0x3F)
+Q5 = 512 #Position of the fifth motor from 0 to 1023 (0x3F)
 msg = bytearray(6)
 Kp = 5/127.5 #[cm/(s*bit)]
 Kg = 90.0/255 #[°/(s*bit)]
@@ -27,7 +54,7 @@ z_lim_up = 52 #cm
 z_lim_down = -26 #cm
 
 #Factors
-gamma_lim = 91 #°
+gamma_lim = 90 #°
 xy_factor = 127.0/43 # bits/cm
 z_factor = 170.0/52 # bits/cm
 gamma_factor = 127.0/gamma_lim # bits/°
@@ -134,18 +161,43 @@ def getBytes2Send():
 
 
 def setup():
-    print("Doing setup...")
-    time.sleep(0.5)
+    global widow, Px, Py, Pz
+    #Wait for first ok
+    line = widow.read_until('\n')
+    while(line != "ok\r\n"):
+        # print(struct.unpack(str(len(line))+'c', line))
+        print(line)
+        line = widow.read_until('\n')
+    # print("yay")
+    #Send ok
+    widow.write(b'ok\n')
+    #Receive points
+    Px = float(widow.readline())
+    Py = float(widow.readline())
+    Pz = float(widow.readline())
+    print("Px: %f"%Px)
+    print("Py: %f"%Py)
+    print("Pz: %f"%Pz)
+    #Send ok
+    widow.write(b'ok');
+
 
 def main():
-    global t0
+    global t0, widow
     setup()
-
+    #Wait for start button
+    data = struct.unpack('64B',f.read(64))
+    start = data[7] & 1
+    while(start==0):
+        data = struct.unpack('64B',f.read(64))
+        start = data[7] & 1
     while 1:
         t0 = time.time()
         getBytes2Send()
-        for i in range(6):
-            print("%d: %s" %(i,hex(msg[i])))
         print
+        widow.write(msg)
+        # for i in range(6):
+        #     print("%d: %s" %(i,hex(msg[i])))
+        # print
 
 main()
