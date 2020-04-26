@@ -434,7 +434,7 @@ void WidowX::setArmGamma(float Px, float Py, float Pz, float gamma)
     if (isRelaxed)
         torqueServos();
 
-    getCurrentPosition();
+    //getCurrentPosition();
     if (getIK_Gamma(Px, Py, Pz, gamma))
         return;
 

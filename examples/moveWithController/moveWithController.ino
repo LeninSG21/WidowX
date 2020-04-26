@@ -89,6 +89,7 @@ void loop() {
       if(px != px_prev || py != py_prev || pz != pz_prev || gamma != gamma_prev)
       {
         widow.setArmGamma(px,py,pz,gamma);
+        
         px_prev = px;
         py_prev = py;
         pz_prev = pz;

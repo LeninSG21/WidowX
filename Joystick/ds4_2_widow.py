@@ -39,7 +39,7 @@ Pz = 0 #Point in Z from base [cm]
 Gamma = 0 #Gamma angle from base_y [°]
 Q5 = 512 #Position of the fifth motor from 0 to 1023 (0x3F)
 msg = bytearray(6)
-Kp = 5/127.5 #[cm/(s*bit)]
+Kp = 10/127.5 #[cm/(s*bit)]
 Kg = 90.0/255 #[°/(s*bit)]
 Kq5 = 512.0/255 #[pos/(s*bit)]
 t0 = 0
@@ -186,6 +186,7 @@ def main():
     global t0, widow
     setup()
     #Wait for start button
+    print("Press PS Button to start")
     data = struct.unpack('64B',f.read(64))
     start = data[7] & 1
     while(start==0):
