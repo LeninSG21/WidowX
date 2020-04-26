@@ -1,6 +1,7 @@
 import serial
 import os
 import struct 
+import time
 
 """
 byte index
@@ -30,9 +31,10 @@ Check full HID Data Format for DS4 @ https://www.psdevwiki.com/ps4/DS4-USB
 """
 joystick_threshold = 20
 f = open("/dev/hidraw2", "rb")
+
 # Open the file in the read-binary mode
 while 1:
-
+    start_time = time.time()
     data = struct.unpack('64B',f.read(64))
 
     # leftStickX = struct.unpack('B', data[1])
@@ -55,21 +57,17 @@ while 1:
     L2 = data[8]
     R2 = data[9]
 
-    # print("leftStickX: %d" % leftStickX)
-    # print("leftStickY: %d" % leftStickY)
-    # print("rightStickX: %d" % rightStickX)
-    # print("rightStickY: %d" % rightStickY)
-    # print("triangle: %d" % triangle)
-    # print("circle: %d" % circle)
-    # print("cross: %d" % cross)
-    # print("square: %d" % square)
-    # print("dpad: %d" % dpad)
-    # print("R3: %d" % R3)
-    # print("L3: %d" % L3)
-    # print("R1: %d" % R1)
-    # print("L1: %d" % L1)
-    # print("R2: %d" % R2)
-    # print("L2: %d" % L2)
+    print("triangle: %d" % triangle)
+    print("circle: %d" % circle)
+    print("cross: %d" % cross)
+    print("square: %d" % square)
+    print("dpad: %d" % dpad)
+    print("R3: %d" % R3)
+    print("L3: %d" % L3)
+    print("R1: %d" % R1)
+    print("L1: %d" % L1)
+    print("R2: %d" % R2)
+    print("L2: %d" % L2)
     #Obtain velocities for x, y and z
     vx = 127 - data[2] #Left Stick Y
     vy = 127 - data[1] #Left Stick X
@@ -83,5 +81,6 @@ while 1:
     print("vx: %d" % vx)
     print("vy: %d" % vy)
     print("vz: %d" % vz)
+    print("--- %s seconds ---" % (time.time() - start_time))
     print
     
