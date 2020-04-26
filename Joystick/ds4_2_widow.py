@@ -160,6 +160,15 @@ def getBytes2Send():
     buildMSG()
 
 
+def readPoint():
+    global Px, Py, Pz
+    Px = float(widow.readline())
+    Py = float(widow.readline())
+    Pz = float(widow.readline())
+    print("Px: %f"%Px)
+    print("Py: %f"%Py)
+    print("Pz: %f"%Pz)
+
 def setup():
     global widow, Px, Py, Pz
     #Wait for first ok
@@ -172,12 +181,7 @@ def setup():
     #Send ok
     widow.write(b'ok\n')
     #Receive points
-    Px = float(widow.readline())
-    Py = float(widow.readline())
-    Pz = float(widow.readline())
-    print("Px: %f"%Px)
-    print("Py: %f"%Py)
-    print("Pz: %f"%Pz)
+    readPoint()
     #Send ok
     widow.write(b'ok');
 

@@ -26,11 +26,9 @@ void setup() {
   {
     while(!Serial.available());
   }
-  widow.getPoint(point);
-  Serial.println(point[0]);
-  Serial.println(point[1]);
-  Serial.println(point[2]);
 
+  writePoint();
+  
   px_prev = point[0]; py_prev = point[1]; pz_prev = point[2];
   gamma_prev = 0;
   while(Serial.readStringUntil('\n')!= "ok")
@@ -120,5 +118,12 @@ void loop() {
       }*/
     }
   }
-  
+}
+
+void writePoint()
+{
+  widow.getPoint(point);
+  Serial.println(point[0]);
+  Serial.println(point[1]);
+  Serial.println(point[2]);
 }

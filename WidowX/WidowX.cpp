@@ -214,7 +214,7 @@ int WidowX::getServoPosition(int idx)
 */
 float WidowX::getServoAngle(int idx)
 {
-    current_angle[idx] = positionToAngle(idx, getServoPosition(idx));
+    getServoPosition(idx);
     return current_angle[idx];
 }
 
@@ -435,7 +435,7 @@ void WidowX::setArmGamma(float Px, float Py, float Pz, float gamma)
         torqueServos();
 
     //getCurrentPosition();
-    if (getIK_Gamma(Px, Py, Pz, gamma))
+    if (getIK_Gamma_Controller(Px, Py, Pz, gamma))
         return;
 
     for (int i = 0; i < 4; i++)
@@ -1054,6 +1054,128 @@ uint8_t WidowX::getIK_RdBase(float Px, float Py, float Pz, Matrix<3, 3> &RdBase)
     Matrix<3, 3> Rd = RzQ1 * RdBase;
 
     return getIK_Rd(Px, Py, Pz, Rd);
+}
+
+/**
+ * Obtains the IK with a desired angle gamma for the gripper. 
+ * Returns 0 if succeeds, returns 1 if fails
+*/
+uint8_t WidowX::getIK_Gamma_Controller(float Px, float Py, float Pz, float gamma)
+{
+    //Calculate sine and cosine of gamma
+    const float sg = sin(gamma), cg = cos(gamma);
+
+    //Obtain the desired point as seen from {1}
+    const float X = sqrt(pow(Px, 2) + pow(Py, 2)) - L4 * cg;
+    const float Z = Pz - L0 + L4 * sg;
+
+    //Obtain q1
+    q1 = atan2(Py, Px);
+
+    //calculate condition for q3
+    c = (pow(X, 2) + pow(Z, 2) - pow(D, 2) - pow(L3, 2)) / (2 * D * L3);
+
+    if (abs(c) > 1)
+        return 1;
+
+    float q3_prev = getServoAngle(2);
+
+    float q3_1 = alpha + acos(c);
+    q3_1 = atan2(sin(q3_1), cos(q3_1));
+    float q3_2 = alpha - acos(c);
+    q3_2 = atan2(sin(q3_2), cos(q3_2));
+
+    uint8_t selection = 0;
+
+    if (abs(q3_1 - q3_prev) > abs(q3_2 - q3_prev))
+    {
+        q3 = q3_2;
+        selection = 0;
+    }
+    else
+    {
+        q3 = q3_1;
+        selection = 1;
+    }
+
+    uint8_t tryTwice = 1;
+
+    //Check q3 limits
+    if (q3 < q3Lim[0] || q3 > q3Lim[1])
+    {
+        //Try with the other possible solution for q3
+        q3 = alpha + pow(-1, selection) * acos(c);
+        q3 = atan2(sin(q3), cos(q3));
+        if (q3 < q3Lim[0] || q3 > q3Lim[1])
+            return 1;
+        tryTwice = 0;
+    }
+
+    float c3, s3;
+    for (;;)
+    {
+        c3 = cos(q3);
+        s3 = sin(q3);
+        a = D * ca + L3 * c3;
+        b = D * sa + L3 * s3;
+        q2 = atan2(a * Z - b * X, a * X + b * Z);
+
+        if (q2 < q2Lim[0] || q2 > q2Lim[1])
+        {
+            if (tryTwice)
+            {
+                //Try with the other possible solution for q3
+                q3 = alpha + pow(-1, selection) * acos(c);
+                q3 = atan2(sin(q3), cos(q3));
+                if (q3 < q3Lim[0] || q3 > q3Lim[1])
+                    //One value of q3 is possible but yields out of range value for q2
+                    //and the other value of q3 exceeds q3's limits. Ends function
+                    return 1;
+
+                //Check with the other possible value of q3 if there's a solution for q2
+                tryTwice = 0;
+                continue;
+            }
+            else
+                //Possible value for q2 doesn't exist with any of q3 possible values
+                //Ends function
+                return 1;
+        }
+
+        q4 = -gamma - q2 - q3;
+
+        if (q4 < q4Lim[0] || q4 > q4Lim[1])
+        {
+            if (tryTwice)
+            {
+                //Try with the other possible solution for q3
+                q3 = alpha + pow(-1, selection) * acos(c);
+                q3 = atan2(sin(q3), cos(q3));
+                if (q3 < q3Lim[0] || q3 > q3Lim[1])
+                    //One value of q3 is possible but yields out of range value for q4
+                    //and the other value of q3 exceeds q3's limits. Ends function
+                    return 1;
+
+                //Check with the other possible value of q3 if there's a solution for q4
+                tryTwice = 0;
+                continue;
+            }
+            else
+                //Possible value for q4 doesn't exist with any of q3 possible values
+                //Ends function
+                return 1;
+        }
+        //Possible value for q2 and q4 exists. Breaks loop
+        break;
+    }
+
+    //Save articular values into the array that will set the next positions
+    desired_angle[0] = q1;
+    desired_angle[1] = q2;
+    desired_angle[2] = q3;
+    desired_angle[3] = q4;
+    //Returns with success
+    return 0;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////

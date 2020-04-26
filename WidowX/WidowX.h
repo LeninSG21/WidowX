@@ -120,6 +120,7 @@ private:
     uint8_t getIK_Gamma(float Px, float Py, float Pz, float gamma);
     uint8_t getIK_Rd(float Px, float Py, float Pz, Matrix<3, 3> &Rd);
     uint8_t getIK_RdBase(float Px, float Py, float Pz, Matrix<3, 3> &RdBase);
+    uint8_t getIK_Gamma_Controller(float Px, float Py, float Pz, float gamma);
 };
 
 #endif
