@@ -83,4 +83,5 @@ while 1:
     print("vz: %d" % vz)
     print("--- %s seconds ---" % (time.time() - start_time))
     print
+    time.sleep(0.1)
     

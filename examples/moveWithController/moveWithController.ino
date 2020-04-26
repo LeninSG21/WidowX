@@ -9,8 +9,8 @@ uint8_t buff[6];
 uint8_t open_close, options;
 uint16_t posq5;
 
-float factor_xy = 43/127;
-float factor_z = 52/170;
+float factor_xy = 43.0/127;
+float factor_z = 52.0/170;
 float factor_gamma = (M_PI_2)/127;
 
 void setup() {
@@ -86,8 +86,6 @@ void loop() {
       posq5 = (buff[4] & 0x3F)<<4 | buff[5]>>4;
       widow.setServo2Position(4, posq5);
       
-      //widow.setArmGamma(px,py,pz,gamma);
-      /*
       if(px != px_prev || py != py_prev || pz != pz_prev || gamma != gamma_prev)
       {
         widow.setArmGamma(px,py,pz,gamma);
@@ -96,7 +94,6 @@ void loop() {
         pz_prev = pz;
         gamma_prev = gamma;
       }
-      */
       
     }else{
       /*

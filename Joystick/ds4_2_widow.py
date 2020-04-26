@@ -191,13 +191,19 @@ def main():
     while(start==0):
         data = struct.unpack('64B',f.read(64))
         start = data[7] & 1
+    
+    delay = time.time()
     while 1:
         t0 = time.time()
         getBytes2Send()
-        print
-        widow.write(msg)
-        # for i in range(6):
-        #     print("%d: %s" %(i,hex(msg[i])))
         # print
+        widow.write(msg)
+        # if(time.time()-delay > 0.01):
+        #     widow.write(msg)
+        #     delay = time.time()
+        #     print
+            # for i in range(6):
+            #     print("%d: %s" %(i,hex(msg[i])))
+            # print
 
 main()
