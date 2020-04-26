@@ -72,6 +72,7 @@ public:
 
     //Move Arm
     void setArmGamma(float Px, float Py, float Pz, float gamma);
+    void syncWrite(uint8_t numServos);
     void moveArmQ4(float Px, float Py, float Pz);
     void moveArmQ4(float Px, float Py, float Pz, int time);
     void moveArmGamma(float Px, float Py, float Pz, float gamma);

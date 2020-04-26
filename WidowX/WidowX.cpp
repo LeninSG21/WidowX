@@ -441,8 +441,34 @@ void WidowX::setArmGamma(float Px, float Py, float Pz, float gamma)
     for (int i = 0; i < 4; i++)
     {
         desired_position[i] = angleToPosition(i, desired_angle[i]);
-        SetPosition(id[i], desired_position[i]);
+        // SetPosition(id[i], desired_position[i]);
     }
+    syncWrite(4);
+}
+
+void WidowX::syncWrite(uint8_t numServos)
+{
+    int temp;
+    int length = 4 + (numServos * 3); // 3 = id + pos(2byte)
+    int checksum = 254 + length + AX_SYNC_WRITE + 2 + AX_GOAL_POSITION_L;
+    setTXall();
+    ax12write(0xFF);
+    ax12write(0xFF);
+    ax12write(0xFE);
+    ax12write(length);
+    ax12write(AX_SYNC_WRITE);
+    ax12write(AX_GOAL_POSITION_L);
+    ax12write(2);
+    for (int i = 0; i < numServos; i++)
+    {
+        temp = desired_position[i];
+        checksum += (temp & 0xff) + (temp >> 8) + id[i];
+        ax12write(id[i]);
+        ax12write(temp & 0xff);
+        ax12write(temp >> 8);
+    }
+    ax12write(0xff - (checksum % 256));
+    setRX(0);
 }
 
 /**
