@@ -31,7 +31,7 @@ Check full HID Data Format for DS4 @ https://www.psdevwiki.com/ps4/DS4-USB
 """
 
 #Global variables
-f = open("/dev/hidraw2", "rb") #HID File where ds4 event is registered
+f = open("/dev/hidraw0", "rb") #HID File where ds4 event is registered
 widow = serial.Serial("/dev/ttyUSB0",115200);
 Px = 0 #Point in X from base [cm]
 Py = 0 #Point in Y from base [cm]
@@ -103,17 +103,17 @@ def buildMSG():
     msg[2] = pyB >> 8 #PyH
     msg[3] = pyB & 0xFF #PyL
     msg[4] = pzB >> 8 #PzH
-    msg[5] = pzB 0xFF #PzL
+    msg[5] = pzB & 0xFF #PzL
     msg[6] = 1<<7 | int(round(abs(Gamma)*gamma_factor)) if Gamma<0 else int(round(Gamma*gamma_factor))
     q5_int = int(round(Q5))
     print("Q5: %d"%q5_int)
     msg[7] = open_close << 6 | q5_int>>4
     msg[8] = (q5_int & 0xf) << 4 | option
 
-def getBytes2Send():
+def getBytes2Send(data):
     global option, open_close, tf
     #Read data from the DS4 controller as HID
-    data = struct.unpack('64B',f.read(64))
+    
 
     #Obtain the mapping from the bytes received
     triangle = data[5] >> 7
@@ -207,12 +207,16 @@ def main():
     
     delay = time.time()
     while 1:
-        t0 = time.time()
-        getBytes2Send()
+        
+        data = struct.unpack('64B',f.read(64))
         # print
-        widow.write(msg)
-        for i in range(6):
-            print("%d: %s" %(i,hex(msg[i])))
-        print
+        if(time.time()-delay > 0.01):
+            t0 = time.time()
+            getBytes2Send(data)
+            widow.write(msg)
+            for i in range(len(msg)):
+                print("%d: %s" %(i,int(msg[i])))
+            print
+            delay = time.time()
 
 main()

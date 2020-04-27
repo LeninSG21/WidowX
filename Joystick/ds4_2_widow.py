@@ -31,7 +31,7 @@ Check full HID Data Format for DS4 @ https://www.psdevwiki.com/ps4/DS4-USB
 """
 
 #Global variables
-f = open("/dev/hidraw2", "rb") #HID File where ds4 event is registered
+f = open("/dev/hidraw0", "rb") #HID File where ds4 event is registered
 widow = serial.Serial("/dev/ttyUSB0",115200);
 Px = 0 #Point in X from base [cm]
 Py = 0 #Point in Y from base [cm]
