@@ -40,9 +40,9 @@ def readDS4():
     data = struct.unpack('64B', f.read(64))
 
     # Define byte array
-    msg = bytearray(8)
-    msg[0] = '<'
-    msg[7] = '>'
+    msg = bytearray(7)
+    msg[0] = 9 #reserved char
+    # msg[7] = '>'
     # Obtain the mapping from the bytes received
     triangle = data[5] >> 7
     circle = data[5] >> 6 & 1
@@ -83,8 +83,8 @@ def readDS4():
         msg[1] = vx
         msg[2] = vy
         msg[3] = vz
-        msg[4] = R2  # Vgamma
-        msg[5] = L2  # Vq5
+        msg[4] = R2 if R2 > 10 else 0  # Vgamma
+        msg[5] = L2 if L2 > 10 else 0 # Vq5
         msg[6] = R1 << 7 | L1 << 6 | open_close << 4 | option
 
         # s = "<"
@@ -123,8 +123,11 @@ def main():
     t0 = time.time()
     while 1:
         msg = readDS4()
-        print(struct.unpack('8B', msg))
-        # if(time.time()-t0>0.01):
-        widow.write(msg)
+        # msg = 'abcdef'
+        
+        if(time.time()-t0>0.05):
+            print(struct.unpack('7B', msg))
+            widow.write(msg)
+            t0 = time.time()
 
 main()
