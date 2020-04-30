@@ -33,6 +33,7 @@ void setup()
 {
     Serial.begin(115200);
     Serial.println("...Starting Robotic Arm...");
+    delay(300);
     widow.init(0);
     delay(100);
     Serial.println("ok");
@@ -41,14 +42,15 @@ void setup()
     {
         while (!Serial.available());
     }
+    delay(1000);
 }
 
 void loop()
 {
     if (Serial.available())
     {
+        Serial.readBytes(buff,6);
         initial_time = millis();
-        Serial.readBytes(buff, 6);
 
         options = buff[5] & 0xF;
         if (options == 0 || options > 5)
@@ -115,4 +117,42 @@ void loop()
             }
         }
     }
+}
+
+void printInfo()
+{
+  
+    Serial.print("\nbuff0: ");Serial.println(buff[0]);
+    Serial.print("buff1: ");Serial.println(buff[1]);
+    Serial.print("buff2: ");Serial.println(buff[2]);
+    Serial.print("buff3: ");Serial.println(buff[3]);
+    Serial.print("buff4: ");Serial.println(buff[4]);
+    Serial.print("buff5: ");Serial.println(buff[5]);
+  
+}
+
+boolean readData()
+{
+  byte startByte = 9;
+  byte rB;
+  while(Serial.available()){
+    rB = Serial.read();
+    if(rB == startByte)
+    {
+      for(int i = 0; i < 6; i++)
+      {
+        while(Serial.available()==0);
+        rB = Serial.read();
+        if(rB==startByte)
+        {
+          i = -1;
+          continue;
+        }else{
+          buff[i] = rB;
+        }
+      }
+      return true;
+    }
+  }
+  return false;
 }

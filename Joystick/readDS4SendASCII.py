@@ -30,7 +30,7 @@ Check full HID Data Format for DS4 @ https://www.psdevwiki.com/ps4/DS4-USB
 """
 
 f = open('/dev/hidraw2', 'rb')
-widow = serial.Serial("/dev/ttyUSB1", 115200)
+widow = serial.Serial("/dev/ttyUSB0", 115200)
 
 joystick_threshold = 20
 
@@ -40,7 +40,7 @@ def readDS4():
     data = struct.unpack('64B', f.read(64))
 
     # Define byte array
-    msg = bytearray(6)
+    msg = bytearray(14)
     # msg[0] = 9 #reserved char
     # msg[7] = '>'
     # Obtain the mapping from the bytes received
@@ -69,36 +69,40 @@ def readDS4():
         option = 0x05
     else:
         option = 0x00
-        # Obtain velocities for x, y, z
-        vx = data[2] if (data[2] >> 7) else (0x7F - data[2])
-        vy = data[1] if (data[1] >> 7) else (0x7F - data[1])
-        vz = data[4] if (data[4] >> 7) else (0x7F - data[4])
 
-        vx = 0 if (vx & 0x7F) < joystick_threshold else vx
-        vy = 0 if (vy & 0x7F) < joystick_threshold else vy
-        vz = 0 if (vz & 0x7F) < joystick_threshold else vz
+    # Obtain velocities for x, y, z
+    vx = data[2] if (data[2] >> 7) else (0x7F - data[2])
+    vy = data[1] if (data[1] >> 7) else (0x7F - data[1])
+    vz = data[4] if (data[4] >> 7) else (0x7F - data[4])
 
-        open_close = cross << 1 | circle
+    vx = 0 if (vx & 0x7F) < joystick_threshold else vx
+    vy = 0 if (vy & 0x7F) < joystick_threshold else vy
+    vz = 0 if (vz & 0x7F) < joystick_threshold else vz
 
-        msg[0] = vx
-        msg[1] = vy
-        msg[2] = vz
-        msg[3] = R2 if R2 > 10 else 0  # Vgamma
-        msg[4] = L2 if L2 > 10 else 0 # Vq5
-        msg[5] = R1 << 7 | L1 << 6 | open_close << 4 | option
+    open_close = cross << 1 | circle
 
-        # s = "<"
-        # for i in msg:
-        #     s+=chr(i)
-        # s+=">"
-        # return s
-        return msg
-    msg[5] = option
-    # s = "<"
-    # for i in msg:
-    #     s+=chr(i)
-    # s+=">"
-    # return s
+    vx_hex = hex(vx)[2:].zfill(2).upper()
+    vy_hex = hex(vy)[2:].zfill(2).upper()
+    vz_hex = hex(vz)[2:].zfill(2).upper()
+    vg_hex = hex(R2 if R2 > 10 else 0)[2:].zfill(2).upper()
+    vq5_hex = hex(L2 if L2 > 10 else 0 )[2:].zfill(2).upper()
+    vopt_hex = hex(R1 << 7 | L1 << 6 | open_close << 4 | option )[2:].zfill(2).upper()
+
+    msg[0] = '<'
+    msg[1] = vx_hex[0]
+    msg[2] = vx_hex[1]
+    msg[3] = vy_hex[0]
+    msg[4] = vy_hex[1]
+    msg[5] = vz_hex[0]
+    msg[6] = vz_hex[1]
+    msg[7] = vg_hex[0]
+    msg[8] = vg_hex[1]
+    msg[9] = vq5_hex[0]
+    msg[10] = vq5_hex[1]
+    msg[11] = vopt_hex[0]
+    msg[12] = vopt_hex[1]
+    msg[13] = '>'
+
     return msg
 
 
@@ -123,11 +127,16 @@ def main():
     t0 = time.time()
     count = 0
     while 1:
+        # widow.flushOutput()
         msg = readDS4()
+        # print msg
+        print widow.write(msg)
+
         # msg = 'abcdef'
-        print(struct.unpack('6B', msg))
-        widow.write(msg)
+        
         # if(time.time()-t0>0.05):
+        #     print msg
+        #     widow.write(msg)
         #     print(struct.unpack('7B', msg))
         #     print(msg)
         #     for c in msg:
