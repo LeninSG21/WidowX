@@ -178,18 +178,27 @@ void WidowX::getCurrentPosition()
     }
 }
 
+void WidowX::getCurrentPosition(uint8_t until_idx)
+{
+    for (uint8_t i = 0; i <= until_idx; i++)
+    {
+        getServoPosition(i);
+    }
+}
+
 /*
  * This function calls the GetPosition function from the ax12.h library. However, it was seen that
  * in some cases the value returned was -1. Hence, it made the arm to move drastically, which 
  * represents a hazar to those around and the arm itself. That is why this function checks if the
- * returned value is -1. If it is, it tries to read the current positon of the servo up to five
- * mover times. If in those tries the value is still -1, then the postion is assumed to be 0.
+ * returned value is -1. If it is, it tries to read the current positon of the servo up to 9
+ * times. If in those tries the value is still -1, then the postion is set to the last know position.
  * That way, the movement will be better than with the position at -1. Due to this check conditions,+
  * this function is preferred over the readPose() function from the BioloidController.h library.
 */
 int WidowX::getServoPosition(int idx)
 {
     uint8_t i = 1;
+    uint16_t prev = current_position[idx];
     current_position[idx] = GetPosition(id[idx]);
     if (current_position[idx] == -1)
     {
@@ -201,7 +210,7 @@ int WidowX::getServoPosition(int idx)
             delay(10 * i);
         }
         if (i == 10)
-            current_position[idx] = angleToPosition(idx, 0);
+            current_position[idx] = prev;
     }
     current_angle[idx] = positionToAngle(idx, current_position[idx]);
     return current_position[idx];
@@ -421,6 +430,19 @@ void WidowX::setServo2Position(int idx, int position)
     SetPosition(id[idx], position);
 }
 
+void WidowX::moveServoWithSpeed(int idx, int speed, long initial_time)
+{
+    int curr = getServoPosition(idx);
+    int tf = millis() - initial_time;
+    int lim_up = 1023;
+    if (idx < 4) //MX-28 | MX_64
+    {
+        lim_up = 4095;
+    }
+    curr = max(0, min(lim_up, round(curr + speed * Ks * tf));
+    setPosition(id[idx], curr);
+}
+
 //Move Arm
 /**
  * Moves the center of the gripper to the specified coordinates Px, Py and Pz, as seen from the base of the robot, with the 
@@ -469,6 +491,17 @@ void WidowX::syncWrite(uint8_t numServos)
     }
     ax12write(0xff - (checksum % 256));
     setRX(0);
+}
+
+void WidowX::movePointWithSpeed(int vx, int vy, int vz, int vg, long initial_time)
+{
+    getPoint(); //Update point and global_gamma
+    int tf = millis() - initial_time;
+    float px = max(-xy_lim, min(xy_lim, point[0] + vx * Kp * tf));
+    float py = max(-xy_lim, min(xy_lim, point[1] + vy * Kp * tf));
+    float pz = max(z_lim_down, min(z_lim_up, point[2] + vz * Kp * tf));
+    float gamma = max(-gamma_lim, min(gamma_lim, global_gamma + vg * Kg * tf));
+    setArmGamma(px, py, pz, gamma);
 }
 
 /**
@@ -719,14 +752,14 @@ int WidowX::angleToPosition(int idx, float angle)
 
 void WidowX::getPoint()
 {
-    getCurrentPosition();
+    getCurrentPosition(3);
     q1 = current_angle[0];
     q2 = current_angle[1];
     q3 = current_angle[2];
     q4 = current_angle[3];
 
     phi2 = D * cos(alpha + q2) + L3 * cos(q2 + q3) + L4 * cos(q2 + q3 + q4);
-
+    global_gamma = -q2 - q3 - q4;
     point[0] = cos(q1) * phi2;
     point[1] = sin(q1) * phi2;
     point[2] = L0 + D * sin(alpha + q2) + L3 * sin(q2 + q3) + L4 * sin(q2 + q3 + q4);
