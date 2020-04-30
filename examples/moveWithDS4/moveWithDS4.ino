@@ -35,12 +35,11 @@ void setup()
     Serial.println("...Starting Robotic Arm...");
     widow.init(0);
     delay(100);
-    while (!Serial.available())
-        ;
+    Serial.println("ok");
+    while (!Serial.available());
     while (Serial.readStringUntil('\n') != "ok")
     {
-        while (!Serial.available())
-            ;
+        while (!Serial.available());
     }
 }
 
@@ -79,7 +78,7 @@ void loop()
             if (vq5)
                 widow.moveServoWithSpeed(4, vq5, initial_time);
 
-            open_close = (buff[5] >> 4) & 0b11);
+            open_close = (buff[5] >> 4) & 0b11;
             switch (open_close)
             {
             case 1:

@@ -1,5 +1,6 @@
 import serial
 import struct
+import time
 
 """
 byte index
@@ -28,7 +29,7 @@ byte index
 Check full HID Data Format for DS4 @ https://www.psdevwiki.com/ps4/DS4-USB
 """
 
-f = open('/dev/hidraw0', 'rb')
+f = open('/dev/hidraw2', 'rb')
 widow = serial.Serial("/dev/ttyUSB0", 115200)
 
 joystick_threshold = 20
@@ -39,8 +40,9 @@ def readDS4():
     data = struct.unpack('64B', f.read(64))
 
     # Define byte array
-    msg = bytearray(6)
-
+    msg = bytearray(8)
+    msg[0] = '<'
+    msg[7] = '>'
     # Obtain the mapping from the bytes received
     triangle = data[5] >> 7
     circle = data[5] >> 6 & 1
@@ -78,16 +80,25 @@ def readDS4():
 
         open_close = cross << 1 | circle
 
-        msg[0] = vx
-        msg[1] = vy
-        msg[2] = vz
-        msg[3] = R2  # Vgamma
-        msg[4] = L2  # Vq5
-        msg[5] = R1 << 7 | L1 << 6 | open_close << 4 | option
+        msg[1] = vx
+        msg[2] = vy
+        msg[3] = vz
+        msg[4] = R2  # Vgamma
+        msg[5] = L2  # Vq5
+        msg[6] = R1 << 7 | L1 << 6 | open_close << 4 | option
 
+        # s = "<"
+        # for i in msg:
+        #     s+=chr(i)
+        # s+=">"
+        # return s
         return msg
-
-    msg[5] = option
+    msg[6] = option
+    # s = "<"
+    # for i in msg:
+    #     s+=chr(i)
+    # s+=">"
+    # return s
     return msg
 
 
@@ -108,6 +119,12 @@ def setup():
 
 def main():
     setup()
-
+    print("Starting loop")
+    t0 = time.time()
     while 1:
-        widow.write(readDS4())
+        msg = readDS4()
+        print(struct.unpack('8B', msg))
+        # if(time.time()-t0>0.01):
+        widow.write(msg)
+
+main()

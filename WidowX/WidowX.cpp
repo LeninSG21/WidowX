@@ -439,8 +439,8 @@ void WidowX::moveServoWithSpeed(int idx, int speed, long initial_time)
     {
         lim_up = 4095;
     }
-    curr = max(0, min(lim_up, round(curr + speed * Ks * tf));
-    setPosition(id[idx], curr);
+    curr = max(0, min(lim_up, round(curr + speed * Ks * tf)));
+    SetPosition(id[idx], curr);
 }
 
 //Move Arm
