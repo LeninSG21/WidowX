@@ -35,10 +35,7 @@ widow = serial.Serial("/dev/ttyUSB1", 115200)
 joystick_threshold = 20
 
 
-def readDS4():
-    # Read data from the DS4 controller as HID
-    data = struct.unpack('64B', f.read(64))
-
+def readDS4(data):
     # Define byte array
     msg = bytearray(6)
     # msg[0] = 9 #reserved char
@@ -87,18 +84,8 @@ def readDS4():
         msg[4] = L2 if L2 > 10 else 0 # Vq5
         msg[5] = R1 << 7 | L1 << 6 | open_close << 4 | option
 
-        # s = "<"
-        # for i in msg:
-        #     s+=chr(i)
-        # s+=">"
-        # return s
         return msg
     msg[5] = option
-    # s = "<"
-    # for i in msg:
-    #     s+=chr(i)
-    # s+=">"
-    # return s
     return msg
 
 
@@ -120,17 +107,14 @@ def setup():
 def main():
     setup()
     print("Starting loop")
-    t0 = time.time()
-    count = 0
     while 1:
-        msg = readDS4()
-        # msg = 'abcdef'
-        print(struct.unpack('6B', msg))
-        widow.write(msg)
-        # if(time.time()-t0>0.05):
-        #     print(struct.unpack('7B', msg))
-        #     print(msg)
-        #     for c in msg:
-        #         widow.write(chr(c))
-        #     t0 = time.time()
+        # Read data from the DS4 controller as HID
+        data = struct.unpack('64B', f.read(64))
+        if widow.in_waiting:
+            widow.readline()
+            msg = readDS4(data)
+            print(struct.unpack('6B', msg))
+            widow.write(msg)
+
+
 main()
