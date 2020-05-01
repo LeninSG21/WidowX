@@ -1,7 +1,8 @@
 #include <WidowX.h>
 
 WidowX widow = WidowX();
-uint8_t buff[6];
+const byte numChars = 6;
+byte buff[numChars];
 uint8_t open_close, options;
 int vx, vy, vz, vg, vq5;
 long initial_time;
@@ -43,13 +44,14 @@ void setup()
         while (!Serial.available());
     }
     delay(1000);
+    Serial.println("ok");
 }
 
 void loop()
 {
     if (Serial.available())
     {
-        Serial.readBytes(buff,6);
+        Serial.readBytes(buff,numChars);
         initial_time = millis();
 
         options = buff[5] & 0xF;
@@ -116,43 +118,6 @@ void loop()
                 break;
             }
         }
+      Serial.println("ok");
     }
-}
-
-void printInfo()
-{
-  
-    Serial.print("\nbuff0: ");Serial.println(buff[0]);
-    Serial.print("buff1: ");Serial.println(buff[1]);
-    Serial.print("buff2: ");Serial.println(buff[2]);
-    Serial.print("buff3: ");Serial.println(buff[3]);
-    Serial.print("buff4: ");Serial.println(buff[4]);
-    Serial.print("buff5: ");Serial.println(buff[5]);
-  
-}
-
-boolean readData()
-{
-  byte startByte = 9;
-  byte rB;
-  while(Serial.available()){
-    rB = Serial.read();
-    if(rB == startByte)
-    {
-      for(int i = 0; i < 6; i++)
-      {
-        while(Serial.available()==0);
-        rB = Serial.read();
-        if(rB==startByte)
-        {
-          i = -1;
-          continue;
-        }else{
-          buff[i] = rB;
-        }
-      }
-      return true;
-    }
-  }
-  return false;
 }

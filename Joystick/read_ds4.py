@@ -30,7 +30,7 @@ Check full HID Data Format for DS4 @ https://www.psdevwiki.com/ps4/DS4-USB
 """
 
 f = open('/dev/hidraw2', 'rb')
-widow = serial.Serial("/dev/ttyUSB1", 115200)
+widow = serial.Serial("/dev/ttyUSB0", 115200)
 
 joystick_threshold = 20
 

@@ -7,6 +7,13 @@ void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
   BT.begin(9600);
+  Serial.println("...Starting Robotic Arm...");
+  Serial.println("ok");
+  while (!Serial.available());
+  while (Serial.readStringUntil('\n') != "ok")
+  {
+      while (!Serial.available());
+  }
   Serial.println("ok");
 }
 
