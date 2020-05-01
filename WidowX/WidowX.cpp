@@ -451,57 +451,6 @@ void WidowX::moveServoWithSpeed(int idx, int speed, long initial_time)
 }
 
 //Move Arm
-/**
- * Moves the center of the gripper to the specified coordinates Px, Py and Pz, as seen from the base of the robot, with the 
- * desired angle gamma of the gripper. For example, gamma = pi/2 will make the arm a Pick N Drop since the gripper will be heading
- * to the floor. It uses getIK_Gamma. This function only affects Q1, Q2, Q3, and Q4. 
- * It does not interpolate the step, since it is designed to be used by a controller that will move the arm
- * smoothly. If there is no solution for the IK, the arm does not move.
-*/
-void WidowX::setArmGamma(float Px, float Py, float Pz, float gamma)
-{
-    if (isRelaxed)
-        torqueServos();
-
-    //getCurrentPosition();
-    if (getIK_Gamma_Controller(Px, Py, Pz, gamma))
-    {
-        updatePoint();
-        return;
-    }
-
-    for (int i = 0; i < 4; i++)
-    {
-        desired_position[i] = angleToPosition(i, desired_angle[i]);
-        // SetPosition(id[i], desired_position[i]);
-    }
-    syncWrite(4);
-}
-
-void WidowX::syncWrite(uint8_t numServos)
-{
-    int temp;
-    int length = 4 + (numServos * 3); // 3 = id + pos(2byte)
-    int checksum = 254 + length + AX_SYNC_WRITE + 2 + AX_GOAL_POSITION_L;
-    setTXall();
-    ax12write(0xFF);
-    ax12write(0xFF);
-    ax12write(0xFE);
-    ax12write(length);
-    ax12write(AX_SYNC_WRITE);
-    ax12write(AX_GOAL_POSITION_L);
-    ax12write(2);
-    for (int i = 0; i < numServos; i++)
-    {
-        temp = desired_position[i];
-        checksum += (temp & 0xff) + (temp >> 8) + id[i];
-        ax12write(id[i]);
-        ax12write(temp & 0xff);
-        ax12write(temp >> 8);
-    }
-    ax12write(0xff - (checksum % 256));
-    setRX(0);
-}
 
 void WidowX::movePointWithSpeed(int vx, int vy, int vz, int vg, long initial_time)
 {
@@ -509,6 +458,25 @@ void WidowX::movePointWithSpeed(int vx, int vy, int vz, int vg, long initial_tim
     int tf = millis() - initial_time;
     speed_points[0] = max(-xy_lim, min(xy_lim, speed_points[0] + vx * Kp * tf));
     speed_points[1] = max(-xy_lim, min(xy_lim, speed_points[1] + vy * Kp * tf));
+    speed_points[2] = max(z_lim_down, min(z_lim_up, speed_points[2] + vz * Kp * tf));
+    global_gamma = max(-gamma_lim, min(gamma_lim, global_gamma + vg * Kg * tf));
+    setArmGamma(speed_points[0], speed_points[1], speed_points[2], global_gamma);
+}
+
+void WidowX::moveArmWithSpeed(int vx, int vy, int vz, int vg, long initial_time)
+{
+    int tf = millis() - initial_time;
+
+    float theta_0 = atan2(speed_points[1], speed_points[0]);
+    float delta_theta = vy * Kg * tf;
+
+    float magnitude_U0 = sqrt(pow(speed_points[0], 2) + pow(speed_points[0], 2));
+    float deltaU = vx * Kp * tf;
+
+    float magnitude_Uf = magnitude_U0 + deltaU;
+    float theta_f = theta_0 + delta_theta;
+    speed_points[0] = magnitude_Uf * cos(theta_f);
+    speed_points[1] = magnitude_Uf * sin(theta_f);
     speed_points[2] = max(z_lim_down, min(z_lim_up, speed_points[2] + vz * Kp * tf));
     global_gamma = max(-gamma_lim, min(gamma_lim, global_gamma + vg * Kg * tf));
     setArmGamma(speed_points[0], speed_points[1], speed_points[2], global_gamma);
@@ -873,6 +841,58 @@ void WidowX::interpolateFromPose(const unsigned int *pose, int remTime)
     SetPosition(id[4], desired_position[4]);
     // SetPosition(id[5], desired_position[5]);
     delay(3);
+}
+
+/**
+ * Moves the center of the gripper to the specified coordinates Px, Py and Pz, as seen from the base of the robot, with the 
+ * desired angle gamma of the gripper. For example, gamma = pi/2 will make the arm a Pick N Drop since the gripper will be heading
+ * to the floor. It uses getIK_Gamma. This function only affects Q1, Q2, Q3, and Q4. 
+ * It does not interpolate the step, since it is designed to be used by a controller that will move the arm
+ * smoothly. If there is no solution for the IK, the arm does not move.
+*/
+void WidowX::setArmGamma(float Px, float Py, float Pz, float gamma)
+{
+    if (isRelaxed)
+        torqueServos();
+
+    //getCurrentPosition();
+    if (getIK_Gamma_Controller(Px, Py, Pz, gamma))
+    {
+        updatePoint();
+        return;
+    }
+
+    for (int i = 0; i < 4; i++)
+    {
+        desired_position[i] = angleToPosition(i, desired_angle[i]);
+        // SetPosition(id[i], desired_position[i]);
+    }
+    syncWrite(4);
+}
+
+void WidowX::syncWrite(uint8_t numServos)
+{
+    int temp;
+    int length = 4 + (numServos * 3); // 3 = id + pos(2byte)
+    int checksum = 254 + length + AX_SYNC_WRITE + 2 + AX_GOAL_POSITION_L;
+    setTXall();
+    ax12write(0xFF);
+    ax12write(0xFF);
+    ax12write(0xFE);
+    ax12write(length);
+    ax12write(AX_SYNC_WRITE);
+    ax12write(AX_GOAL_POSITION_L);
+    ax12write(2);
+    for (int i = 0; i < numServos; i++)
+    {
+        temp = desired_position[i];
+        checksum += (temp & 0xff) + (temp >> 8) + id[i];
+        ax12write(id[i]);
+        ax12write(temp & 0xff);
+        ax12write(temp >> 8);
+    }
+    ax12write(0xff - (checksum % 256));
+    setRX(0);
 }
 
 //Inverse Kinematics

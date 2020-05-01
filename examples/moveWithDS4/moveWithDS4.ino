@@ -4,6 +4,7 @@ WidowX widow = WidowX();
 const byte numChars = 6;
 byte buff[numChars];
 uint8_t open_close, options;
+uint8_t moveOption = 0;
 int vx, vy, vz, vg, vq5;
 long initial_time;
 /*
@@ -55,7 +56,7 @@ void loop()
         Serial.readBytes(buff,numChars);
         
         options = buff[5] & 0xF;
-        if (options == 0 || options > 5)
+        if (options == 0)
         {
             vx = buff[0] & 0x7F;
             if (buff[0] >> 7)
@@ -81,7 +82,13 @@ void loop()
             if (vq5)
                 widow.moveServoWithSpeed(4, vq5, initial_time);
             if (vx || vy || vz || vg)
+            {
+              if(moveOption)
                 widow.movePointWithSpeed(vx, vy, vz, vg, initial_time);
+              else
+                widow.moveArmWithSpeed(vx, vy, vz, vg, initial_time);
+            }
+                
             
             open_close = (buff[5] >> 4) & 0b11;
             switch (open_close)
@@ -114,6 +121,12 @@ void loop()
                 break;
             case 5:
                 widow.torqueServos();
+                break;
+            case 6:
+                moveOption = 1;
+                break;
+            case 7:
+                moveOption = 0;
                 break;
             default:
                 break;

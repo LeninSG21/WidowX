@@ -73,9 +73,9 @@ public:
     void moveServoWithSpeed(int idx, int speed, long initial_time);
 
     //Move Arm
-    void setArmGamma(float Px, float Py, float Pz, float gamma);
-    void syncWrite(uint8_t numServos);
+
     void movePointWithSpeed(int vx, int vy, int vz, int vg, long initial_time);
+    void moveArmWithSpeed(int vx, int vy, int vz, int vg, long initial_time);
     void moveArmQ4(float Px, float Py, float Pz);
     void moveArmQ4(float Px, float Py, float Pz, int time);
     void moveArmGamma(float Px, float Py, float Pz, float gamma);
@@ -104,7 +104,7 @@ private:
 
     //Multiplying factors
     const float Kp = 30.0 / 127000;   //[cm/(ms*bit)]
-    const float Kg = M_PI_2 / 255000; //[°/(ms*bit)]
+    const float Kg = M_PI_2 / 255000; //[rad/(ms*bit)]
     const float Ks = 1024.0 / 255000; //[pos/(ms*bit)]
 
     //Variables
@@ -130,6 +130,8 @@ private:
     void cubeInterpolation(Matrix<4> &params, float *w, int time);
     void interpolate(int remainingTime);
     void interpolateFromPose(const unsigned int *pose, int remainingTime);
+    void setArmGamma(float Px, float Py, float Pz, float gamma);
+    void syncWrite(uint8_t numServos);
 
     //Inverse Kinematics
     uint8_t getIK_Q4(float Px, float Py, float Pz);

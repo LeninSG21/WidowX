@@ -1,6 +1,8 @@
 {
     "files.associations": {
-        "random": "cpp"
+        "random": "cpp",
+        "chrono": "cpp",
+        "limits": "cpp"
     },
     "python.pythonPath": "C:\\Users\\vsiwr\\AppData\\Local\\Microsoft\\WindowsApps\\python.exe"
 }

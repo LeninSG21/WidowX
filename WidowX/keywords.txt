@@ -8,6 +8,7 @@ moveRest	KEYWORD2
 checkVoltage	KEYWORD2
 getCurrentPosition	KEYWORD2
 getServoPosition    KEYWORD2
+getServoAngle	KEYWORD2
 getPoint	KEYWORD2
 relaxServos	KEYWORD2
 torqueServos	KEYWORD2
@@ -17,7 +18,9 @@ moveWrist	KEYWORD2
 turnWrist	KEYWORD2
 moveGrip	KEYWORD2
 setServo2Position	KEYWORD2
-setArmGamma	KEYWORD2
+moveServoWithSpeed	KEYWORD2
+movePointWithSpeed	KEYWORD2
+moveArmWithSpeed	KEYWORD2
 moveArmQ4		KEYWORD2
 moveArmGamma		KEYWORD2
 moveArmRd		KEYWORD2

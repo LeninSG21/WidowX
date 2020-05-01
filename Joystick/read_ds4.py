@@ -64,6 +64,10 @@ def readDS4(data):
         option = 0x04
     elif(dpad == 0):  # torqueServos
         option = 0x05
+    elif(dpad == 2):
+        option = 0x06 #Move by point
+    elif(dpad == 6):
+        option = 0x07 #Move arm from {1}
     else:
         option = 0x00
         # Obtain velocities for x, y, z
