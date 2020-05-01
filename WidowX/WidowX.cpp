@@ -113,7 +113,7 @@ void WidowX::moveCenter()
 {
     getCurrentPosition();
     interpolateFromPose(Center, DEFAULT_TIME);
-    getCurrentPosition();
+    updatePoint();
 }
 /*
  * Moves to the arm to the home position as defined by the bioloid controller. Reads the pose from PROGMEM
@@ -124,7 +124,7 @@ void WidowX::moveHome()
 
     getCurrentPosition();
     interpolateFromPose(Home, DEFAULT_TIME);
-    getCurrentPosition();
+    updatePoint();
 }
 
 /*
@@ -136,7 +136,7 @@ void WidowX::moveRest()
 {
     getCurrentPosition();
     interpolateFromPose(Rest, DEFAULT_TIME);
-    getCurrentPosition();
+    updatePoint();
 }
 
 //Get Information
@@ -197,22 +197,29 @@ void WidowX::getCurrentPosition(uint8_t until_idx)
 */
 int WidowX::getServoPosition(int idx)
 {
-    uint8_t i = 1;
+    uint8_t i = 0;
     uint16_t prev = current_position[idx];
     current_position[idx] = GetPosition(id[idx]);
-    if (current_position[idx] == -1)
+    while (current_position[idx] == -1)
     {
-        for (i = 1; i < 10; i++)
-        {
-            current_position[idx] = GetPosition(id[idx]);
-            if (current_position[idx] != -1)
-                break;
-            delay(10 * i);
-        }
-        if (i == 10)
-            current_position[idx] = prev;
+        i = (i % 10) + 1;
+        delay(5 * i);
+        current_position[idx] = GetPosition(id[idx]);
     }
+    // if (current_position[idx] == -1)
+    // {
+    //     for (i = 1; i < 11; i++)
+    //     {
+    //         current_position[idx] = GetPosition(id[idx]);
+    //         if (current_position[idx] != -1)
+    //             break;
+    //         delay(10 * i);
+    //     }
+    //     if (i == 10)
+    //         current_position[idx] = prev;
+    // }
     current_angle[idx] = positionToAngle(idx, current_position[idx]);
+    float_position[idx] = current_position[idx];
     return current_position[idx];
 }
 
@@ -233,7 +240,7 @@ float WidowX::getServoAngle(int idx)
  */
 void WidowX::getPoint(float *p)
 {
-    getPoint();
+    updatePoint();
     p[0] = point[0];
     p[1] = point[1];
     p[2] = point[2];
@@ -432,15 +439,15 @@ void WidowX::setServo2Position(int idx, int position)
 
 void WidowX::moveServoWithSpeed(int idx, int speed, long initial_time)
 {
-    int curr = getServoPosition(idx);
+
     int tf = millis() - initial_time;
     int lim_up = 1023;
     if (idx < 4) //MX-28 | MX_64
     {
         lim_up = 4095;
     }
-    curr = max(0, min(lim_up, round(curr + speed * Ks * tf)));
-    SetPosition(id[idx], curr);
+    float_position[idx] = max(0, min(lim_up, float_position[idx] + speed * Ks * tf));
+    SetPosition(id[idx], round(float_position[idx]));
 }
 
 //Move Arm
@@ -458,7 +465,10 @@ void WidowX::setArmGamma(float Px, float Py, float Pz, float gamma)
 
     //getCurrentPosition();
     if (getIK_Gamma_Controller(Px, Py, Pz, gamma))
+    {
+        updatePoint();
         return;
+    }
 
     for (int i = 0; i < 4; i++)
     {
@@ -495,13 +505,13 @@ void WidowX::syncWrite(uint8_t numServos)
 
 void WidowX::movePointWithSpeed(int vx, int vy, int vz, int vg, long initial_time)
 {
-    getPoint(); //Update point and global_gamma
+
     int tf = millis() - initial_time;
-    float px = max(-xy_lim, min(xy_lim, point[0] + vx * Kp * tf));
-    float py = max(-xy_lim, min(xy_lim, point[1] + vy * Kp * tf));
-    float pz = max(z_lim_down, min(z_lim_up, point[2] + vz * Kp * tf));
-    float gamma = max(-gamma_lim, min(gamma_lim, global_gamma + vg * Kg * tf));
-    setArmGamma(px, py, pz, gamma);
+    speed_points[0] = max(-xy_lim, min(xy_lim, speed_points[0] + vx * Kp * tf));
+    speed_points[1] = max(-xy_lim, min(xy_lim, speed_points[1] + vy * Kp * tf));
+    speed_points[2] = max(z_lim_down, min(z_lim_up, speed_points[2] + vz * Kp * tf));
+    global_gamma = max(-gamma_lim, min(gamma_lim, global_gamma + vg * Kg * tf));
+    setArmGamma(speed_points[0], speed_points[1], speed_points[2], global_gamma);
 }
 
 /**
@@ -750,9 +760,9 @@ int WidowX::angleToPosition(int idx, float angle)
 
 //Poses and interpolation
 
-void WidowX::getPoint()
+void WidowX::updatePoint()
 {
-    getCurrentPosition(3);
+    getCurrentPosition(4);
     q1 = current_angle[0];
     q2 = current_angle[1];
     q3 = current_angle[2];
@@ -763,6 +773,9 @@ void WidowX::getPoint()
     point[0] = cos(q1) * phi2;
     point[1] = sin(q1) * phi2;
     point[2] = L0 + D * sin(alpha + q2) + L3 * sin(q2 + q3) + L4 * sin(q2 + q3 + q4);
+    speed_points[0] = point[0];
+    speed_points[1] = point[1];
+    speed_points[2] = point[2];
 }
 
 void WidowX::cubeInterpolation(Matrix<4> &params, float *w, int time)
@@ -826,7 +839,7 @@ void WidowX::interpolateFromPose(const unsigned int *pose, int remTime)
 {
     uint8_t i;
     Matrix<4> params;
-    for (i = 0; i < SERVOCOUNT; i++)
+    for (i = 0; i < SERVOCOUNT - 1; i++)
     {
         desired_position[i] = pgm_read_word_near(pose + i);
         params(0) = current_position[i];
@@ -843,7 +856,7 @@ void WidowX::interpolateFromPose(const unsigned int *pose, int remTime)
     {
         curr_2 = pow(currentTime, 2);
         curr_3 = pow(currentTime, 3);
-        for (i = 0; i < SERVOCOUNT; i++)
+        for (i = 0; i < SERVOCOUNT - 1; i++)
         {
             next_position[i] = round(W[i][0] + W[i][1] * currentTime + W[i][2] * curr_2 + W[i][3] * curr_3);
             SetPosition(id[i], next_position[i]);
@@ -858,7 +871,7 @@ void WidowX::interpolateFromPose(const unsigned int *pose, int remTime)
     SetPosition(id[2], desired_position[2]);
     SetPosition(id[3], desired_position[3]);
     SetPosition(id[4], desired_position[4]);
-    SetPosition(id[5], desired_position[5]);
+    // SetPosition(id[5], desired_position[5]);
     delay(3);
 }
 

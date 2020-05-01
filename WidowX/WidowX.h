@@ -103,19 +103,21 @@ private:
     const float gamma_lim = M_PI_2;
 
     //Multiplying factors
-    const float Kp = 10.0 / 127000;   //[cm/(ms*bit)]
+    const float Kp = 30.0 / 127000;   //[cm/(ms*bit)]
     const float Kg = M_PI_2 / 255000; //[°/(ms*bit)]
-    const float Ks = 512.0 / 255000;  //[pos/(ms*bit)]
+    const float Ks = 1024.0 / 255000; //[pos/(ms*bit)]
 
     //Variables
     uint8_t id[6];
     uint8_t isRelaxed;
     uint16_t current_position[6];
+    float float_position[6];
     float current_angle[6];
     float desired_angle[6];
     uint16_t desired_position[6];
     uint16_t next_position[6];
     float point[3];
+    float speed_points[3];
     float global_gamma;
     float W[6][4];
 
@@ -124,7 +126,7 @@ private:
     int angleToPosition(int idx, float angle);
 
     //Poses and interpolation
-    void getPoint();
+    void updatePoint();
     void cubeInterpolation(Matrix<4> &params, float *w, int time);
     void interpolate(int remainingTime);
     void interpolateFromPose(const unsigned int *pose, int remainingTime);

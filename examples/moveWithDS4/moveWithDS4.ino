@@ -6,7 +6,6 @@ byte buff[numChars];
 uint8_t open_close, options;
 int vx, vy, vz, vg, vq5;
 long initial_time;
-
 /*
     BUFFER MESSAGE
 
@@ -33,6 +32,7 @@ long initial_time;
 void setup()
 {
     Serial.begin(115200);
+    delay(1000);
     Serial.println("...Starting Robotic Arm...");
     delay(300);
     widow.init(0);
@@ -51,9 +51,9 @@ void loop()
 {
     if (Serial.available())
     {
-        Serial.readBytes(buff,numChars);
         initial_time = millis();
-
+        Serial.readBytes(buff,numChars);
+        
         options = buff[5] & 0xF;
         if (options == 0 || options > 5)
         {
@@ -76,12 +76,13 @@ void loop()
                 vg = -vg;
             if ((buff[5] >> 6) & 1) //Sq5
                 vq5 = -vq5;
-
-            if (vx || vy || vz || vg)
-                widow.movePointWithSpeed(vx, vy, vz, vg, initial_time);
+                
+            delay(5);
             if (vq5)
                 widow.moveServoWithSpeed(4, vq5, initial_time);
-
+            if (vx || vy || vz || vg)
+                widow.movePointWithSpeed(vx, vy, vz, vg, initial_time);
+            
             open_close = (buff[5] >> 4) & 0b11;
             switch (open_close)
             {
