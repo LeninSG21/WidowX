@@ -103,7 +103,7 @@ private:
     const float gamma_lim = M_PI_2;
 
     //Multiplying factors
-    const float Kp = 30.0 / 127000;   //[cm/(ms*bit)]
+    const float Kp = 60.0 / 127000;   //[cm/(ms*bit)]
     const float Kg = M_PI_2 / 255000; //[rad/(ms*bit)]
     const float Ks = 1024.0 / 255000; //[pos/(ms*bit)]
 

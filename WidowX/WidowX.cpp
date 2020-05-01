@@ -468,7 +468,7 @@ void WidowX::moveArmWithSpeed(int vx, int vy, int vz, int vg, long initial_time)
     int tf = millis() - initial_time;
 
     float theta_0 = atan2(speed_points[1], speed_points[0]);
-    float delta_theta = 2 * vy * Kg * tf;
+    float delta_theta = 4 * vy * Kg * tf;
 
     float magnitude_U0 = sqrt(pow(speed_points[0], 2) + pow(speed_points[1], 2));
     float deltaU = vx * Kp * tf;
