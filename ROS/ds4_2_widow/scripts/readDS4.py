@@ -36,7 +36,7 @@ os.system("ls -l /dev/hidraw*")
 hidraw = raw_input("hidraw device number: ")
 f = open('/dev/hidraw'+hidraw, 'rb')
 
-joystick_threshold = 20
+joystick_threshold = 10
 
 def readDS4(data):
     msg = ""
@@ -96,8 +96,8 @@ def readDS4(data):
 def talker():
     pub = rospy.Publisher('controller_message', String, queue_size=10)
     rospy.init_node('ds4_receiver', anonymous=True)
-    # rate = rospy.Rate(100) # 100hz
     rospy.loginfo("Press PS Button to start!")
+    
     while not rospy.is_shutdown():
         data = struct.unpack('64B', f.read(64))
         start = data[7] & 1
@@ -108,7 +108,6 @@ def talker():
             msg = readDS4(data)
             rospy.loginfo(msg)
             pub.publish(msg)
-        # rate.sleep()
  
 if __name__ == '__main__':
     try:
