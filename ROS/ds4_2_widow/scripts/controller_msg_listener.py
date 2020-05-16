@@ -3,7 +3,8 @@ import rospy
 import serial
 from std_msgs.msg import String
 
-widow = serial.Serial('/dev/ttyUSB1', 115200)
+widow = serial.Serial('/dev/ttyUSB0', 115200)
+init = True
 
 def setup():
     line = widow.read_until('\n')
@@ -12,15 +13,21 @@ def setup():
         line = widow.read_until('\n')
     rospy.sleep(1)
     widow.write(b'ok\n')
+    rospy.loginfo("Press PS Button to start!")
 
 def callback(data):
-    
-    
-    if widow.in_waiting:
-        rospy.loginfo(rospy.get_caller_id() + data.data)
-        widow.readline()
-        for char in data.data.split(","):
-            widow.write(chr(int(char)))
+    global init
+
+    if init and data.data != "start":
+        return
+    else:
+        if data.data == "start":
+            init = False
+        elif widow.in_waiting:
+            rospy.loginfo(rospy.get_caller_id() + data.data)
+            widow.readline()
+            for char in data.data.split(","):
+                widow.write(chr(int(char)))
 
 
 def listener():

@@ -3,6 +3,7 @@
 import rospy
 from std_msgs.msg import String
 import struct
+import os
 
 """
 byte index
@@ -31,16 +32,15 @@ byte index
 Check full HID Data Format for DS4 @ https://www.psdevwiki.com/ps4/DS4-USB
 """
 
-f = open('/dev/hidraw2', 'rb')
+os.system("ls -l /dev/hidraw*")
+hidraw = raw_input("hidraw device number: ")
+f = open('/dev/hidraw'+hidraw, 'rb')
 
 joystick_threshold = 20
 
 def readDS4(data):
-    # Define byte array
-    # msg = bytearray(6)
     msg = ""
-    # msg[0] = 9 #reserved char
-    # msg[7] = '>'
+
     # Obtain the mapping from the bytes received
     triangle = data[5] >> 7
     circle = data[5] >> 6 & 1
@@ -97,11 +97,17 @@ def talker():
     pub = rospy.Publisher('controller_message', String, queue_size=10)
     rospy.init_node('ds4_receiver', anonymous=True)
     # rate = rospy.Rate(100) # 100hz
+    rospy.loginfo("Press PS Button to start!")
     while not rospy.is_shutdown():
         data = struct.unpack('64B', f.read(64))
-        msg = readDS4(data)
-        rospy.loginfo(msg)
-        pub.publish(msg)
+        start = data[7] & 1
+        if(start):
+            rospy.loginfo("Starting the robotic arm!")
+            pub.publish("start")
+        else:
+            msg = readDS4(data)
+            rospy.loginfo(msg)
+            pub.publish(msg)
         # rate.sleep()
  
 if __name__ == '__main__':
