@@ -21,6 +21,7 @@ import TranslateIcon from "@material-ui/icons/Translate";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import ForwardKinematics from "../DK";
 import { HomeView } from "./view";
+import ArduinoLibrary from "../ArduinoLibrary";
 
 export const LangContext = createContext<language>("english");
 
@@ -61,7 +62,7 @@ const HomePage: React.FC<RouteComponentProps<any>> = () => {
 					</Toolbar>
 				</AppBar>
 				<nav className={classes.drawer} aria-label="mailbox folders">
-					<Hidden smUp implementation="css">
+					<Hidden mdUp implementation="css">
 						<Drawer
 							variant="temporary"
 							anchor="left"
@@ -77,7 +78,7 @@ const HomePage: React.FC<RouteComponentProps<any>> = () => {
 							<DrawerMenu />
 						</Drawer>
 					</Hidden>
-					<Hidden xsDown implementation="css">
+					<Hidden smDown implementation="css">
 						<Drawer
 							classes={{
 								paper: classes.drawerPaper,
@@ -95,6 +96,11 @@ const HomePage: React.FC<RouteComponentProps<any>> = () => {
 						exact
 						path={ROUTES.DK}
 						render={(props) => <ForwardKinematics />}
+					/>
+					<Route
+						exact
+						path={ROUTES.CPP}
+						render={() => <ArduinoLibrary />}
 					/>
 				</div>
 			</div>

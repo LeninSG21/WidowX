@@ -15,6 +15,7 @@ import ForwardIcon from "@material-ui/icons/Forward";
 import SwapHorizIcon from "@material-ui/icons/SwapHoriz";
 import AppsIcon from "@material-ui/icons/Apps";
 import AllInclusiveIcon from "@material-ui/icons/AllInclusive";
+import { Typo } from "../../assets/Style";
 
 const menuItems = (lang: language): MenuItem[] => [
 	{

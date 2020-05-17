@@ -8,7 +8,7 @@ export const useStyles = makeStyles((theme) => ({
 		display: "flex",
 	},
 	drawer: {
-		[theme.breakpoints.up("sm")]: {
+		[theme.breakpoints.up("md")]: {
 			width: drawerWidth,
 			flexShrink: 0,
 		},
@@ -19,7 +19,7 @@ export const useStyles = makeStyles((theme) => ({
 		color: theme.palette.common.white,
 	},
 	appBar: {
-		[theme.breakpoints.up("sm")]: {
+		[theme.breakpoints.up("md")]: {
 			width: `calc(100% - ${drawerWidth}px)`,
 			marginLeft: drawerWidth,
 		},
@@ -28,7 +28,7 @@ export const useStyles = makeStyles((theme) => ({
 	},
 	menuButton: {
 		marginRight: theme.spacing(2),
-		[theme.breakpoints.up("sm")]: {
+		[theme.breakpoints.up("md")]: {
 			display: "none",
 		},
 	},
@@ -42,5 +42,16 @@ export const useStyles = makeStyles((theme) => ({
 	content: {
 		marginLeft: theme.spacing(3),
 		marginTop: theme.spacing(10),
+		marginRight: theme.spacing(3),
+		marginBottom: theme.spacing(1),
+		paddingLeft: theme.spacing(3),
+		paddingRight: theme.spacing(3),
+		paddingTop: theme.spacing(2),
+		[theme.breakpoints.up("md")]: {
+			paddingRight: theme.spacing(10),
+		},
+		[theme.breakpoints.up("xl")]: {
+			paddingRight: theme.spacing(20),
+		},
 	},
 }));
