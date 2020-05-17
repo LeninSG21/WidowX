@@ -7,18 +7,35 @@ import {
 	List,
 	Typography,
 	Divider,
+	ListItemIcon,
 } from "@material-ui/core";
 import { RouteComponentProps, withRouter, Link } from "react-router-dom";
 import { useStyles } from "./style";
+import ForwardIcon from "@material-ui/icons/Forward";
+import SwapHorizIcon from "@material-ui/icons/SwapHoriz";
+import AppsIcon from "@material-ui/icons/Apps";
+import AllInclusiveIcon from "@material-ui/icons/AllInclusive";
 
 const menuItems = (lang: language): MenuItem[] => [
 	{
-		text: lang === "english" ? "Direct Kinematics" : "Cinemática Directa",
+		text: lang === "english" ? "Forward Kinematics" : "Cinemática Directa",
 		route: ROUTES.DK,
+		icon: <ForwardIcon />,
 	},
 	{
 		text: lang === "english" ? "Inverse Kinematics" : "Cinemática Inversa",
 		route: ROUTES.IK,
+		icon: <SwapHorizIcon />,
+	},
+	{
+		text: lang === "english" ? "Arduino Library" : "Librería de Arduino",
+		route: ROUTES.CPP,
+		icon: <AllInclusiveIcon />,
+	},
+	{
+		text: lang === "english" ? "ROS Package" : "Paquete de ROS",
+		route: ROUTES.ROS,
+		icon: <AppsIcon />,
 	},
 ];
 
@@ -56,7 +73,18 @@ const DrawerMenu: React.FC<Props> = ({ history }) => {
 						key={item.text}
 						onClick={() => history.push(item.route)}
 					>
-						<ListItemText primary={item.text} />
+						{item.icon && (
+							<ListItemIcon className={classes.menuIcon}>
+								{item.icon}
+							</ListItemIcon>
+						)}
+						<ListItemText
+							primary={
+								<Typography variant="button">
+									{item.text}
+								</Typography>
+							}
+						/>
 					</ListItem>
 				))}
 			</List>

@@ -7,7 +7,10 @@ export const useStyles = makeStyles((theme) => ({
 	},
 	linkHome: {
 		textDecoration: "none",
-		color: theme.palette.common.black,
+		color: theme.palette.common.white,
+	},
+	menuIcon: {
+		color: theme.palette.common.white,
 	},
 	toolbar: theme.mixins.toolbar,
 }));

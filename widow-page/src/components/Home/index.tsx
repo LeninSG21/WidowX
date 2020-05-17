@@ -1,19 +1,15 @@
 import React, { useState, createContext } from "react";
-import { language } from "../../constants/";
-import { RouteComponentProps } from "react-router-dom";
+import { language, ROUTES } from "../../constants/";
+import { RouteComponentProps, Route } from "react-router-dom";
 
 import { useStyles } from "./style";
 import {
 	Hidden,
 	Drawer,
-	Select,
 	CssBaseline,
 	AppBar,
 	Toolbar,
 	IconButton,
-	Typography,
-	TextField,
-	InputAdornment,
 	MenuItem,
 	Menu,
 	Button,
@@ -23,6 +19,8 @@ import MenuIcon from "@material-ui/icons/Menu";
 import GitHubIcon from "@material-ui/icons/GitHub";
 import TranslateIcon from "@material-ui/icons/Translate";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
+import ForwardKinematics from "../DK";
+import { HomeView } from "./view";
 
 export const LangContext = createContext<language>("english");
 
@@ -30,24 +28,6 @@ const HomePage: React.FC<RouteComponentProps<any>> = () => {
 	const classes = useStyles();
 	const [mobileOpen, setMobileOpen] = useState(false);
 	const [lang, setLang] = useState<language>("english");
-
-	const changeLanguage = (
-		evt: React.ChangeEvent<{
-			name?: string | undefined;
-			value: unknown;
-		}>
-	) => {
-		switch (evt.target.value) {
-			case "english":
-				setLang("english");
-				break;
-			case "spanish":
-				setLang("spanish");
-				break;
-			default:
-				break;
-		}
-	};
 
 	return (
 		<LangContext.Provider value={lang}>
@@ -65,22 +45,7 @@ const HomePage: React.FC<RouteComponentProps<any>> = () => {
 							<MenuIcon />
 						</IconButton>
 						<div className={classes.grow} />
-						{/* <TextField
-							className={classes.select}
-							value={lang}
-							select
-							InputProps={{
-								startAdornment: (
-									<InputAdornment position="start">
-										<TranslateIcon />
-									</InputAdornment>
-								),
-							}}
-							onChange={changeLanguage}
-						>
-							<MenuItem value="english">English</MenuItem>
-							<MenuItem value="spanish">Español</MenuItem>
-						</TextField> */}
+
 						<LanguageSelector lang={lang} setLang={setLang} />
 						<IconButton
 							onClick={() =>
@@ -124,6 +89,14 @@ const HomePage: React.FC<RouteComponentProps<any>> = () => {
 						</Drawer>
 					</Hidden>
 				</nav>
+				<div className={classes.content}>
+					<Route exact path={"/"} render={() => <HomeView />} />
+					<Route
+						exact
+						path={ROUTES.DK}
+						render={(props) => <ForwardKinematics />}
+					/>
+				</div>
 			</div>
 		</LangContext.Provider>
 	);

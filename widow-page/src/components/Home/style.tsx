@@ -1,6 +1,7 @@
 import { makeStyles } from "@material-ui/core";
+import { teal } from "@material-ui/core/colors";
 
-const drawerWidth = 240;
+const drawerWidth = 275;
 
 export const useStyles = makeStyles((theme) => ({
 	root: {
@@ -14,12 +15,16 @@ export const useStyles = makeStyles((theme) => ({
 	},
 	drawerPaper: {
 		width: drawerWidth,
+		backgroundColor: teal[500],
+		color: theme.palette.common.white,
 	},
 	appBar: {
 		[theme.breakpoints.up("sm")]: {
 			width: `calc(100% - ${drawerWidth}px)`,
 			marginLeft: drawerWidth,
 		},
+		backgroundColor: teal[500],
+		color: theme.palette.common.white,
 	},
 	menuButton: {
 		marginRight: theme.spacing(2),
@@ -33,5 +38,9 @@ export const useStyles = makeStyles((theme) => ({
 	select: {
 		color: theme.palette.common.white,
 		marginRight: theme.spacing(1),
+	},
+	content: {
+		marginLeft: theme.spacing(3),
+		marginTop: theme.spacing(10),
 	},
 }));
