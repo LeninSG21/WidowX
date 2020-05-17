@@ -91,12 +91,12 @@ const HomePage: React.FC<RouteComponentProps<any>> = () => {
 					</Hidden>
 				</nav>
 				<div className={classes.content}>
-					<Route exact path={"/"} render={() => <HomeView />} />
+					{/* <Route exact path={"/"} render={() => <HomeView />} />
 					<Route
 						exact
 						path={ROUTES.DK}
-						render={(props) => <ForwardKinematics />}
-					/>
+						render={() => <ForwardKinematics />}
+					/> */}
 					<Route
 						exact
 						path={ROUTES.CPP}
