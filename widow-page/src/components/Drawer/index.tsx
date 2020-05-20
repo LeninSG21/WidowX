@@ -50,7 +50,7 @@ const DrawerMenu: React.FC<Props> = ({ history }) => {
 			<div className={`${classes.toolbar} ${classes.title}`}>
 				{/* <div className={classes.title}> */}
 				<Typography variant="h5">
-					<Link to="/" className={classes.linkHome}>
+					<Link to="/WidowX" className={classes.linkHome}>
 						WidowX Library
 					</Link>
 				</Typography>
@@ -68,7 +68,7 @@ const DrawerMenu: React.FC<Props> = ({ history }) => {
 			</div>
 			<Divider />
 			<List>
-				{menuItems(lang).map((item) => (
+				{menuItems(lang).map((item: MenuItem) => (
 					<ListItem
 						button
 						key={item.text}

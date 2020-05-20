@@ -32,7 +32,7 @@ export const spanishAL: AL_MD = {
 	],
 };
 export const englishAL: AL_MD = {
-	title: "Arduino Library",
+	title: "Arduino Library..",
 	intro: `WidowX.h is an Arduino library designed to simplify the operation of the
      [WidowX Robot Arm](https://www.trossenrobotics.com/widowxrobotarm) of [Trossen Robotics](https://www.trossenrobotics.com/)
       when controlled with the [Arbotix-M Robocontroller](https://learn.trossenrobotics.com/arbotix). It is based in [ax12.h](https://github.com/vanadiumlabs/arbotix/blob/master/libraries/Bioloid/ax12.h). 

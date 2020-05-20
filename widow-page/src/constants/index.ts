@@ -1,17 +1,17 @@
 export type language = "english" | "spanish";
 
 interface Routes {
-	DK: "/forward_kinematics";
-	IK: "/inverse_kinematics";
-	CPP: "/arduino_library";
-	ROS: "/ros_package";
+	DK: "/WidowX/forward_kinematics";
+	IK: "/WidowX/inverse_kinematics";
+	CPP: "/WidowX/arduino_library";
+	ROS: "/WidowX/ros_package";
 }
 
 export const ROUTES: Routes = {
-	DK: "/forward_kinematics",
-	IK: "/inverse_kinematics",
-	CPP: "/arduino_library",
-	ROS: "/ros_package",
+	DK: "/WidowX/forward_kinematics",
+	IK: "/WidowX/inverse_kinematics",
+	CPP: "/WidowX/arduino_library",
+	ROS: "/WidowX/ros_package",
 };
 
 export interface MenuItem {
