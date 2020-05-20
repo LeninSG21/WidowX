@@ -46,10 +46,11 @@ public:
     void setId(int idx, int newID);
     int getId(int idx);
 
-    //Preloaded Positions
+    //Preloaded Poses
     void moveCenter();
     void moveHome();
     void moveRest();
+    void moveToPose(const unsigned int *pose);
 
     //Get Information
     void checkVoltage();

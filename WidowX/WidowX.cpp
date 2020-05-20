@@ -54,8 +54,8 @@ float curr_2, curr_3;
 
 //INITIALIAZERS
 /*
- * Constructor: intializes the bioloid controller to a baud of 1000000, sets the
- * servo count to 6, and fills the id array from 1 to 6.
+ * Constructor of the class. Needs to be called first to create an instance. 
+ * It assigns values to some constants and fills the id array from 1 to 6. 
 */
 WidowX::WidowX()
     : SERVOCOUNT(6), L0(9), L1(14), L2(5), L3(14),
@@ -70,9 +70,9 @@ WidowX::WidowX()
 }
 
 /*
- * This is NOT a required function in order to work properly. It sends the arm to 
- * rest position and it disables the torque to save energy. It also checks the 
- * voltage with the function checkVoltage(). 
+ * This is NOT a required function in order to work properly. It sends the arm 
+ * to rest position. It also checks the voltage with the function checkVoltage(). 
+ * If relax != 0, then the torque is disabled after it reaches the rest position.
 */
 void WidowX::init(uint8_t relax)
 {
@@ -103,11 +103,11 @@ int WidowX::getId(int idx)
     return id[idx];
 }
 
-//Preloaded Positions
+//Preloaded Poses
 /*
  * Moves to the arm to the center of all motors, forming an upside L. As seen from 
- * the kinematic analysis done for this library, it would be equal to setting al
- * articular values to 0°.  Reads the pose from PROGMEM. Gets the current position once it's done.
+ * the kinematic analysis done for this library, it would be equal to setting all
+ * articular values to 0°.  Reads the pose from PROGMEM. Updates point once it's done
 */
 void WidowX::moveCenter()
 {
@@ -116,8 +116,8 @@ void WidowX::moveCenter()
     updatePoint();
 }
 /*
- * Moves to the arm to the home position as defined by the bioloid controller. Reads the pose from PROGMEM
- * Gets the current position once it's done.
+ * Moves to the arm to the home position as defined by the bioloid controller. 
+ * Reads the pose from PROGMEM. Updates point once it's done
 */
 void WidowX::moveHome()
 {
@@ -128,14 +128,21 @@ void WidowX::moveHome()
 }
 
 /*
- * Moves to the arm to the rest position, which is when the arm is resting over itself. Reads the pose from PROGMEM
- * Gets the current position once it's done.
+ * Moves to the arm to the rest position, which is when the arm is resting over itself. 
+ * Reads the pose from PROGMEM. Updates point once it's done
  * 
 */
 void WidowX::moveRest()
 {
     getCurrentPosition();
     interpolateFromPose(Rest, DEFAULT_TIME);
+    updatePoint();
+}
+
+void WidowX::moveToPose(const unsigned int *pose)
+{
+    getCurrentPosition();
+    interpolateFromPose(pose, DEFAULT_TIME);
     updatePoint();
 }
 
