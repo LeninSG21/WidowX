@@ -1,0 +1,9 @@
+{
+	"short_name": "WidowX",
+	"name": "WidowX Library Documentation",
+	"icons": [],
+	"start_url": "/WidowX/index.html",
+	"display": "standalone",
+	"theme_color": "#000000",
+	"background_color": "#ffffff"
+}
