@@ -150,8 +150,9 @@ void WidowX::moveToPose(const unsigned int *pose)
 /* 
  * Checks that the voltage values are adequate for the robotic arm. If it is below
  * 10V, it remains in a loop until the voltage increases. This is to prevent
- * damage to the arm. Also, it prints to the serial monitor some information about the
- * voltage.
+ * damage to the arm. Also, it sends through the serial port of the ArbotiX some 
+ * information about the voltage, which can be then seen by the serial monitor or
+ *  received with another interface connected to the ArbotiX serial
 */
 void WidowX::checkVoltage()
 {
@@ -194,13 +195,16 @@ void WidowX::getCurrentPosition(uint8_t until_idx)
 }
 
 /*
- * This function calls the GetPosition function from the ax12.h library. However, it was seen that
- * in some cases the value returned was -1. Hence, it made the arm to move drastically, which 
- * represents a hazar to those around and the arm itself. That is why this function checks if the
- * returned value is -1. If it is, it tries to read the current positon of the servo up to 9
- * times. If in those tries the value is still -1, then the postion is set to the last know position.
- * That way, the movement will be better than with the position at -1. Due to this check conditions,+
- * this function is preferred over the readPose() function from the BioloidController.h library.
+ * This function calls the GetPosition function from the ax12.h library. However, 
+ * it was seen that in some cases the value returned was -1. Hence, it made the 
+ * arm to move drastically, which, represents a hazard to those around and the arm 
+ * itself. That is why this function checks if the returned value is -1. If it is, 
+ * reads the current position of the specified motor until the value is not -1. Also, 
+ * for every iteration, the delay between lectures varies from 5 to 45ms, to give time 
+ * to the motor to respond appropriately. Due to this check conditions, this function 
+ * is preferred over the readPose() function from the BioloidController.h library. 
+ * The problem is that it might cause a significant delay if the motors keep returning -1. 
+ * Nonetheless, it is better to have this delay than to risk the arm’s integrity. 
 */
 int WidowX::getServoPosition(int idx)
 {
@@ -213,18 +217,6 @@ int WidowX::getServoPosition(int idx)
         delay(5 * i);
         current_position[idx] = GetPosition(id[idx]);
     }
-    // if (current_position[idx] == -1)
-    // {
-    //     for (i = 1; i < 11; i++)
-    //     {
-    //         current_position[idx] = GetPosition(id[idx]);
-    //         if (current_position[idx] != -1)
-    //             break;
-    //         delay(10 * i);
-    //     }
-    //     if (i == 10)
-    //         current_position[idx] = prev;
-    // }
     current_angle[idx] = positionToAngle(idx, current_position[idx]);
     float_position[idx] = current_position[idx];
     return current_position[idx];
@@ -242,7 +234,7 @@ float WidowX::getServoAngle(int idx)
 }
 
 /*
- * Calls the private function get point to load the current point and copies
+ * Calls the private function updatePoint to load the current point and copies
  * the values into the provided pointer
  */
 void WidowX::getPoint(float *p)
@@ -341,66 +333,8 @@ void WidowX::moveServo2Position(int idx, int pos)
 }
 
 /**
- * Moves the wrist (Q4) in the direction specified: 0 --> CW, 1 --> CCW in steps of 50
- * Use it inside a loop with a delay to control the smoothnes of the turn. Ideal for
- * movement with control or key that is being sent as long as it is pressed
-*/
-void WidowX::moveWrist(int direction)
-{
-    posQ4 = getServoPosition(3);
-    if (direction)
-    {
-        if (posQ4 < 3080)
-        {
-            posQ4 += 50;
-        }
-    }
-    else
-    {
-        if (posQ4 > 1020)
-        {
-            posQ4 -= 50;
-        }
-    }
-    SetPosition(id[3], posQ4);
-}
-
-/**
- * Turns the wrist (Q5) in the direction specified: 0 --> CW, 1 --> CCW in steps of 10
- * Use it inside a loop with a delay to control the smoothnes of the turn. Ideal for
- * movement with control or key that is being sent as long as it is pressed
-*/
-void WidowX::turnWrist(int direction)
-{
-    posQ5 = getServoPosition(4);
-    if (direction)
-    {
-        if (posQ5 < 1013)
-        {
-            posQ5 += 10;
-        }
-        else
-        {
-            posQ5 = 1023;
-        }
-    }
-    else
-    {
-        if (posQ5 > 10)
-        {
-            posQ5 -= 10;
-        }
-        else
-        {
-            posQ5 = 0;
-        }
-    }
-    SetPosition(id[4], posQ5);
-}
-
-/**
- * Closes or opens the gripper (Q6): close = 0 --> open, close = 1 --> close in steps of 10
- * Use it inside a loop with a delay to control the smoothnes of the turn. Ideal for
+ * Closes or opens the gripper (Q6 | idx = 5): close = 0 --> open, close = 1 --> close in steps of 10
+ * Use it inside a loop with a delay to control the smoothness of the turn. Ideal for
  * movement with control or key that is being sent as long as it is pressed
 */
 void WidowX::moveGrip(int close)

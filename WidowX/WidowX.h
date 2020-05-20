@@ -67,8 +67,6 @@ public:
     //Move Servo
     void moveServo2Angle(int idx, float angle);
     void moveServo2Position(int idx, int pos);
-    void moveWrist(int direction);
-    void turnWrist(int direction);
     void moveGrip(int close);
     void setServo2Position(int idx, int position);
     void moveServoWithSpeed(int idx, int speed, long initial_time);
