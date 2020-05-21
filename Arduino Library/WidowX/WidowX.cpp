@@ -291,7 +291,7 @@ void WidowX::moveServo2Angle(int idx, float angle)
         while (curr < pos)
         {
             SetPosition(id[idx], ++curr);
-            delay(3);
+            delay(1);
         }
     }
     else
@@ -299,7 +299,7 @@ void WidowX::moveServo2Angle(int idx, float angle)
         while (curr > pos)
         {
             SetPosition(id[idx], --curr);
-            delay(3);
+            delay(1);
         }
     }
 }
@@ -319,7 +319,7 @@ void WidowX::moveServo2Position(int idx, int pos)
         while (curr < pos)
         {
             SetPosition(id[idx], ++curr);
-            delay(3);
+            delay(1);
         }
     }
     else
@@ -327,7 +327,7 @@ void WidowX::moveServo2Position(int idx, int pos)
         while (curr > pos)
         {
             SetPosition(id[idx], --curr);
-            delay(3);
+            delay(1);
         }
     }
 }
@@ -392,7 +392,21 @@ void WidowX::moveServoWithSpeed(int idx, int speed, long initial_time)
 }
 
 //Move Arm
-
+/*
+    This function is designed to work with a joystick or controller. It moves the origin 
+    of the grippers coordinate system. To move the arm with speed control, use this 
+    function inside a loop. At the beginning of the loop, the initial_time is 
+    set—for example, with the function millis() in Arduino. 
+    The function receives four different velocities:
+    •	vx: velocity to move the x-coordinate as seen from the base of the robot
+    •	vy:  velocity to move the y-coordinate as seen from the base of the robot
+    •	vz:  velocity to move the z-coordinate as seen from the base of the robot
+    •	vg:  velocity to move the angle of the gripper as seen from the base of the robot
+    This function was designed considering that speed values range from [-127,127] for 
+    vx, vy and vz and [-255,255] for vg. Higher values are mathematically possible, 
+    but will make the arm move faster, so be cautious. This function offers a 
+    better controlling experience for machines.
+*/
 void WidowX::movePointWithSpeed(int vx, int vy, int vz, int vg, long initial_time)
 {
 
@@ -404,6 +418,17 @@ void WidowX::movePointWithSpeed(int vx, int vy, int vz, int vg, long initial_tim
     setArmGamma(speed_points[0], speed_points[1], speed_points[2], global_gamma);
 }
 
+/*
+    This function also moves the arm when controlled with a joystick or controller, 
+    just as movePointWithSpeed(). However, while the other function moves according 
+    to the desired translation and rotation of the origin of the grippers coordinate 
+    system, this function moves the arm to the front or back with vx, it turns it 
+    around with vy and with vy it goes up and down. This function was designed 
+    considering that speed values range from [-127,127] for vx, vy and vz and 
+    [-255,255] for vg. Higher values are mathematically possible, but will make 
+    the arm move faster, so be cautious. This function offers a better controlling 
+    experience for human operators.
+*/
 void WidowX::moveArmWithSpeed(int vx, int vy, int vz, int vg, long initial_time)
 {
     int tf = millis() - initial_time;
@@ -472,7 +497,7 @@ void WidowX::moveArmQ4(float Px, float Py, float Pz, int time)
  * Moves the center of the gripper to the specified coordinates Px, Py and Pz, as seen from the base of the robot, with the 
  * desired angle gamma of the gripper. For example, gamma = pi/2 will make the arm a Pick N Drop since the gripper will be heading
  * to the floor. It uses getIK_Gamma. This function only affects Q1, Q2, Q3, and Q4. 
- *  It interpolates the step using a cubic interpolation with the default time.
+ * It interpolates the step using a cubic interpolation with the default time.
  * If there is no solution for the IK, the arm does not move and a message is printed into the serial monitor.
 */
 void WidowX::moveArmGamma(float Px, float Py, float Pz, float gamma)
@@ -515,11 +540,12 @@ void WidowX::moveArmGamma(float Px, float Py, float Pz, float gamma, int time)
 
 /**
  * Moves the center of the gripper to the specified coordinates Px, Py and Pz, and with the desired rotation of the coordinate system
- * of the gripper, as seen from the coordinate system {1} of the robot. For example, when Rd is an identity matriz of 3x3, the gripper's 
+ * of the gripper, as seen from the coordinate system {1} of the robot. For example, when Rd is an identity matrix of 3x3, the gripper's 
  * rotation will be such that the orientation of the system {1} and the orientation of the gripper's system will be exactly the same. Thus,
  * it is harder to obtain solutions for the IK. It uses getIK_Rd. This function affects Q1, Q2, Q3, Q4, and Q5. 
- * It interpolates the step using a cubic interpolation with the deault time.
+ * It interpolates the step using a cubic interpolation with the default time.
  * If there is no solution for the IK, the arm does not move and a message is printed into the serial monitor.
+ * Rd is a Matrix object as defined by BasicLinearAlgebra.h
 */
 void WidowX::moveArmRd(float Px, float Py, float Pz, Matrix<3, 3> &Rd)
 {
@@ -537,11 +563,12 @@ void WidowX::moveArmRd(float Px, float Py, float Pz, Matrix<3, 3> &Rd)
 
 /**
  * Moves the center of the gripper to the specified coordinates Px, Py and Pz, as seen from the base of the robot, and with the desired rotation of the coordinate system
- * of the gripper, as seen from the coordinate system {1} of the robot. For example, when Rd is an identity matriz of 3x3, the gripper's 
+ * of the gripper, as seen from the coordinate system {1} of the robot. For example, when Rd is an identity matrix of 3x3, the gripper's 
  * rotation will be such that the orientation of the system {1} and the orientation of the gripper's system will be exactly the same. Thus,
  * it is harder to obtain solutions for the IK. It uses getIK_Rd. This function affects Q1, Q2, Q3, Q4, and Q5. 
  * It interpolates the step using a cubic interpolation with the given time in milliseconds.
  * If there is no solution for the IK, the arm does not move and a message is printed into the serial monitor.
+ * Rd is a Matrix object as defined by BasicLinearAlgebra.h
 */
 void WidowX::moveArmRd(float Px, float Py, float Pz, Matrix<3, 3> &Rd, int time)
 {
@@ -559,12 +586,12 @@ void WidowX::moveArmRd(float Px, float Py, float Pz, Matrix<3, 3> &Rd, int time)
 }
 
 /**
- * Moves the center of the gripper to the specified coordinates Px, Py and Pz, and with the desired rotation of the coordinate system
- * of the gripper, as seen from the base of the robot. For example, when Rd is an identity matriz of 3x3, the gripper's 
- * rotation will be such that the orientation of the system {1} and the orientation of the gripper's system will be exactly the same. Thus,
- * it is harder to obtain solutions for the IK. It uses getIK_Rd. This function affects Q1, Q2, Q3, Q4, and Q5. 
- * It interpolates the step using a cubic interpolation with the default time.
- * If there is no solution for the IK, the arm does not move and a message is printed into the serial monitor.
+ * Moves the center of the gripper to the specified coordinates Px, Py and Pz, 
+ * and with the desired rotation of the coordinate system of the gripper, as 
+ * seen from the base of the robot. It uses getIK_RdBase. This function affects 
+ * Q1, Q2, Q3, Q4, and Q5. It interpolates the step using a cubic interpolation 
+ * with the default time. If there is no solution for the IK, the arm does not move, 
+ * and a message is printed into the serial monitor.
 */
 void WidowX::moveArmRdBase(float Px, float Py, float Pz, Matrix<3, 3> &RdBase)
 {
@@ -582,12 +609,12 @@ void WidowX::moveArmRdBase(float Px, float Py, float Pz, Matrix<3, 3> &RdBase)
 }
 
 /**
- * Moves the center of the gripper to the specified coordinates Px, Py and Pz, and with the desired rotation of the coordinate system
- * of the gripper, as seen from the base of the robot. For example, when Rd is an identity matriz of 3x3, the gripper's 
- * rotation will be such that the orientation of the system {1} and the orientation of the gripper's system will be exactly the same. Thus,
- * it is harder to obtain solutions for the IK. It uses getIK_Rd. This function affects Q1, Q2, Q3, Q4, and Q5. 
- * It interpolates the step using a cubic interpolation with the given time in milliseconds.
- * If there is no solution for the IK, the arm does not move and a message is printed into the serial monitor.
+ * Moves the center of the gripper to the specified coordinates Px, Py and Pz, 
+ * and with the desired rotation of the coordinate system of the gripper, as 
+ * seen from the base of the robot. It uses getIK_RdBase. This function affects 
+ * Q1, Q2, Q3, Q4, and Q5. It interpolates the step using a cubic interpolation 
+ * with the given time in milliseconds. If there is no solution for the IK, the arm does not move, 
+ * and a message is printed into the serial monitor.
 */
 void WidowX::moveArmRdBase(float Px, float Py, float Pz, Matrix<3, 3> &RdBase, int time)
 {
