@@ -59,7 +59,7 @@ void someFunction(int idx) //assume idx = 2 for the example
   int actualID = id[idx];
   //If id[] = {1,2,3,4,5,6}, id[idx] = 3 
   //If id[] = {16,17,18,19,20,21}, id[idx] = 18
-  //GetPosition(actualID);//use of ax12.h library that requires id
+  GetPosition(actualID);//use of ax12.h library that requires id
 }
 ```
 
