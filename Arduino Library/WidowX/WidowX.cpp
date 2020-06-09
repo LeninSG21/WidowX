@@ -678,6 +678,13 @@ float WidowX::positionToAngle(int idx, int position)
 
 int WidowX::angleToPosition(int idx, float angle)
 {
+    if (abs(angle) > M_PI)
+    {
+        if (angle > 0)
+            angle -= 2 * M_PI;
+        else
+            angle += 2 * M_PI;
+    }
     if (idx == 0 || idx == 3 || idx == 2) //MX-28 || MX-64
         //0 - 4095, 0.088°
         // 0° - 360°
@@ -698,7 +705,7 @@ int WidowX::angleToPosition(int idx, float angle)
 
 void WidowX::updatePoint()
 {
-    getCurrentPosition(4);
+    getCurrentPosition();
     q1 = current_angle[0];
     q2 = current_angle[1];
     q3 = current_angle[2];
@@ -944,8 +951,8 @@ uint8_t WidowX::getIK_Q4(float Px, float Py, float Pz)
     desired_angle[1] = q2;
     desired_angle[2] = q3;
     desired_angle[3] = q4;
-    desired_angle[4] = current_angle[5]; //getServoAngle(4);
-    desired_angle[5] = current_angle[6]; //getServoAngle(5);
+    desired_angle[4] = current_angle[4]; //getServoAngle(4);
+    desired_angle[5] = current_angle[5]; //getServoAngle(5);
     //Returns with success
     return 0;
 }
@@ -1050,8 +1057,8 @@ uint8_t WidowX::getIK_Gamma(float Px, float Py, float Pz, float gamma)
     desired_angle[1] = q2;
     desired_angle[2] = q3;
     desired_angle[3] = q4;
-    desired_angle[4] = current_angle[5]; //getServoAngle(4);
-    desired_angle[5] = current_angle[6]; //getServoAngle(5);
+    desired_angle[4] = current_angle[4]; //getServoAngle(4);
+    desired_angle[5] = current_angle[5]; //getServoAngle(5);
     //Returns with success
     return 0;
 }
