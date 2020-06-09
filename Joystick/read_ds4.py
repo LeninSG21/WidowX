@@ -30,7 +30,7 @@ Check full HID Data Format for DS4 @ https://www.psdevwiki.com/ps4/DS4-USB
 """
 
 f = open('/dev/hidraw2', 'rb')
-widow = serial.Serial("/dev/ttyUSB0", 115200)
+# widow = serial.Serial("/dev/ttyUSB0", 115200)
 
 joystick_threshold = 20
 
@@ -52,6 +52,7 @@ def readDS4(data):
     L1 = data[6] & 1
     L2 = data[8]
     R2 = data[9]
+
 
     # Check for higher priority conditions
     if(L3):  # moveRest
@@ -109,7 +110,7 @@ def setup():
 
 
 def main():
-    setup()
+    # setup()
     print("Starting loop")
     while 1:
         # Read data from the DS4 controller as HID
