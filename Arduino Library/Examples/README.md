@@ -155,7 +155,7 @@ else{
 Also, in the grip movement bits, two more actions could be added, apart from open and close. That means that with this 6 bytes message configuration, up to 10 more actions can be included with the same code. You just need to add more cases in the corresponding area.
 
 ### Move Options
-There are two movement options with this code: the USER_FRIENDLY and the POINT_MOVEMENT options. By default, the program initializes with the USER_FRIENDLY mode active, but you can change to POINT_MOVEMENT mode (and viceversa) with the options nibble. 
+There are two movement options with this code: the **USER_FRIENDLY** and the **POINT_MOVEMENT** options. By default, the program initializes with the USER_FRIENDLY mode active, but you can change to POINT_MOVEMENT mode (and viceversa) with the options nibble. 
 While the message received is the same, the user experience varies depending on the selected mode. 
 
 As the name suggests, the easiest way to control the arm with a controller is with the USER_FRIENDLY mode. With this mode, the velocity in x makes the arm go forward or backward from the system {1}. That is, if you want it to go to the front, you just send a positive vx, and if you want it to go back, a negative vx. With the velocity in y, you can make the arm turn counter clockwise with a positive vy and clockwise with a negative vy (as seen from above). With vz, you make it go up or down. This is ideal if the arm has a camera on it and it moves along with the arm. Then, the controlling experience is the same no matter the orientation of the arm.
