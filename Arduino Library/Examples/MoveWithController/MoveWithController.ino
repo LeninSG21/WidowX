@@ -1,12 +1,14 @@
 #include <WidowX.h>
 
 #define NUM_CHARS 6
+#define USER_FRIENDLY 0
+#define POINT_MOVEMENT 1
 
 WidowX widow = WidowX();
 
 byte buff[NUM_CHARS]; //buffer to save the message
 uint8_t open_close, options;
-uint8_t moveOption = 0;
+uint8_t moveOption = USER_FRIENDLY;
 int vx, vy, vz, vg, vq5;
 long initial_time;
 
@@ -132,10 +134,10 @@ void loop() {
             widow.torqueServos();
             break;
         case 6:
-            moveOption = 1;
+            moveOption = POINT_MOVEMENT;
             break;
         case 7:
-            moveOption = 0;
+            moveOption = USER_FRIENDLY;
             break;
         default:
             break;
