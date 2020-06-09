@@ -2,8 +2,11 @@
 import rospy
 import serial
 from std_msgs.msg import String
+import os
 
-widow = serial.Serial('/dev/ttyUSB0', 115200)
+os.system("ls -l /dev/ttyUSB*")
+tty = raw_input("ttyUSB device number: ")
+widow = serial.Serial('/dev/ttyUSB' + tty, 115200)
 init = True
 
 def setup():
