@@ -55,6 +55,8 @@ long initial_time;
                     3 --> center
                     4 --> relax
                     5 --> torque
+                    6 --> moveOption = POINT_MOVEMENT
+                    7 --> moveOption = USER_FRIENDLY
                     other --> void
 */
 
