@@ -30,7 +30,6 @@ SOFTWARE.
 
 #include "Arduino.h"
 #include <ax12.h>
-#include <BioloidController.h>
 #include <BasicLinearAlgebra.h>
 
 using namespace BLA;
