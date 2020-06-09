@@ -27,7 +27,6 @@ SOFTWARE.
 #include "Arduino.h"
 #include "WidowX.h"
 #include <ax12.h>
-#include <BioloidController.h>
 #include "math.h"
 #include "poses.h"
 #include <BasicLinearAlgebra.h>
