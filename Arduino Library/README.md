@@ -12,7 +12,7 @@ Afterwards, go to the [WidowX Library repo](https://github.com/LeninSG21/WidowX)
 
 Also, you should see in the same space the Bioloid and BasicLinearAlgebra libraries. That means that everything is installed properly and that the arm is ready to be used.
 
-To confirm the installation, open the file _Arduino Library/Examples/testArm.ino._ The arm should move to rest position, then home, then center and finally rest position again. Open the Serial terminal at 115,200 bps to check the messages from the test.
+To confirm the installation, open the file [**Arduino Library > Examples > testArm.ino**](https://github.com/LeninSG21/WidowX/blob/master/Arduino%20Library/Examples/testArm/testArm.ino). The arm should move to rest position, then home, then center and finally rest position again. Open the Serial terminal at 115,200 bps to check the messages from the test.
 
 ## WidowX Files
 
