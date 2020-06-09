@@ -1,6 +1,6 @@
 /*
 WidowX.h - Library to control WidowX Robotic Arm of Trossen Robotics
-Created by Lenin Silva, April, 2020
+Created by Lenin Silva, June, 2020
  
  MIT License
 
