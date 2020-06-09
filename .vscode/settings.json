@@ -1,8 +1,0 @@
-{
-    "files.associations": {
-        "random": "cpp",
-        "chrono": "cpp",
-        "limits": "cpp"
-    },
-    "python.pythonPath": "/usr/bin/python2.7"
-}
