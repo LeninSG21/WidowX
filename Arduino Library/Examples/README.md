@@ -12,6 +12,8 @@ The `HowToUse.ino` file allows you to interact with some of the functions of the
 
 Also, you can see the effect of relaxing the servos and activating the torque. Make sure to grab the arm or to have it in rest position before calling the relax command. Finally, you can watch a demonstration of the different inverse kinematics functions. Look at the serial terminal to read the inverse kinematics function that is being used and the point and rotation that is desired to achieve. Then look the arm do it. This is a good way to understand the different effects each function has and by looking at the code you can learn how to implement it.
 
+This code is also useful to completely understand what it is explained in the [id vs idx](https://github.com/LeninSG21/WidowX/tree/master/Arduino%20Library#id-vs-idx) section of the documentation. Remember that this library works with the constant idx (index) of each servomotor rather than with the ids given to each. Be sure to check that section and the play around with the `move2angle` and `move2position` functions. 
+
 This code depends on the BasicLinearAlgebra.h library, so be sure to download for the code to run appropriately.
 
 ## Move With Controller
