@@ -14,4 +14,4 @@ it, since the node dedicated to connect with the ArbotiX of the WidowX arm is un
 the topic) and the code for the ArbotiX ([MoveWithController.ino](https://github.com/LeninSG21/WidowX/blob/master/Arduino%20Library/Examples/MoveWithController/MoveWithController.ino)
 is also universal. So lets see how it works and so that you can adapt it to your own controller.
 
-
+First, lets take a look to the following diagram. 
