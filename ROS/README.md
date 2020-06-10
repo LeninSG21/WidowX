@@ -20,7 +20,7 @@ First, lets take a look to the following diagram.
 
 In here, we see the different blocks that interconnect to allow the controller to move the WidowX Arm. The controller sends the HID package to the node *ds4_receiver* that is in charge of reading this information and publish the appropriate message to the topic *controller_message*. The node *controller_msg_listener* is subscribed to said topic, and when it receives a message, the node arranges the message into the [data format](https://github.com/LeninSG21/WidowX/tree/master/Arduino%20Library/Examples#data-format) that will be sent to the ArbotiX that is running the **MoveWithController.ino** code. 
 
-Notice also that each node is being executed by different computers. This is ideal to run move the WidowX remotely. However, it is not necessary to run it separately. You can execute this nodes in the same computer. If you want to execute it with different PCs connected via LAN, check the section [Remote Connection]()
+Notice also that each node is being executed by different computers. This is ideal to run move the WidowX remotely. However, it is not necessary to run it separately. You can execute this nodes in the same computer. If you want to execute it with different PCs connected via LAN, check the section [Remote Connection](https://github.com/LeninSG21/WidowX/blob/master/ROS/README.md#remote-connection) section.
 
 ## Message structure
 
@@ -45,7 +45,7 @@ $ rm -rf build devel
 $ catkin_make
 $ source devel/setup.bash
 ```
-Finally, before running the ROS nodes, start the master with `$ roscore`
+Finally, before running the ROS nodes, don't forget to start the master with `$ roscore`
 
 ## DS4 Receiver
 
@@ -67,6 +67,39 @@ $ sudo chmod a+r /dev/hidrawN
 
 Notice that you have to substitute *N* with the actual number of your device. 
 
+Finally, start the node with the command
+```sh
+$ rosrun ds4_2_widow ds4_receiver
+```
+A list containing all the hidraw devices found will be shown. Then, you'll be prompted to select the number of the hidraw device and the code will start executing. You will see in the terminal the message that is being sent to the topic. Move the josticks and see how the message change.
+
+### DS4 Controller Mapping
+
+## Controller Message Receiver
+
+This node is in charge of reading the message string from the topic and parsing it into the data format to be sent via serial to the ArbotiX. For it to work, you need to connect the ArbotiX to a USB port and allow the lecture and writing of the port. To do that, you have to list the USB ports to determine which one corresponds to your ArbotiX
+
+```sh
+$ ls -l /dev/ttyUSB*
+```
+This will show all the ttyUSB devices connected. If you do not know which one corresponds to the ArbotiX, run the command before plugging the microcontroller and after plugging it to determine the ttyUSB number. Once you've done that, you'll need to enable the lecture and writing with the following commad
+
+```sh
+$ sudo chmod a+rw /dev/ttyUSBN
+```
+Notice that you have to substitute *N* with the actual number of your device.
+
+Before running the node, be sure to turn have the ArbotiX connected to the appropriate power source. Remember that for the arm to work, the jumper in the ArbotiX must be set to Vin to indicate that it will be powered through an external power source. If you leave it in USB and leave the arm connected, it will consume more current to move the arm and it will potentially kill your computer. Run the following command once you've done that
+```sh
+$ rosrun ds4_2_widow controller_msg_receiver
+```
+A list containing all the ttyUSB devices found will be shown. Then, you'll be prompted to select the number of the ttyUSB device and the code will start executing. 
+
+The first step is to establish the communication with the ArbotiX. Hence, the code first opens the serial port at 115,200 bps. You'll receive some useful messages, one of them saying that the WidowX is starting and the next messages indicating the voltage level. This sequence belongs to the WidowX.h class and checks that the voltage is above 10V to operate appropriately. After that, the code does a handshake with the **MoveWithController.ino** code, where it receives from the ArbotiX **ok\n**. Then, it has to send **ok\n** and finally wait for a last **ok\n** from the microcontroller that indicates that it is ready to receive the 6 bytes messages to control the WidowX. 
+
+The last step of the initialization is asking the user to press the PS button to start the lecture of the DS4. This button is handled by the **ds4_receiver**. The **controller_msg_receiver** waits until the string **"start"** is received. Once this happens, it beggins the normal operation. 
+
+During the normal loop, this node will print into the terminal the message that is being received. Move the controller to see how this message changes. Also, the robot arm should be moving by now. If it moves as expected, play a little and get used to the controls!
 
 ## Remote Connection
 Hello there!
