@@ -137,9 +137,30 @@ A list containing all the hidraw devices found will be shown. Then, you'll be pr
       <td><img alt="Dualshock cross button" src="https://www.psdevwiki.com/ps4/images/thumb/3/31/Tex-guidepanel-Cross.png/23px-Tex-guidepanel-Cross.png" width="23" height="23" srcset="https://www.psdevwiki.com/ps4/images/thumb/3/31/Tex-guidepanel-Cross.png/35px-Tex-guidepanel-Cross.png 1.5x, /ps4/images/3/31/Tex-guidepanel-Cross.png 2x"></td>
       <td>Close Grip </td>
     </tr>
+    <tr>
+      <td> D-PAD UP</td>
+      <td>Torque</td>
+    </tr>
+    <tr>
+      <td> D-PAD DOWN</td>
+      <td>Relax</td>
+    </tr>
+    <tr>
+      <td> D-PAD LEFT</td>
+      <td>USER_FRIENDLY Operation Mode</td>
+    </tr>
+    <tr>
+      <td> D-PAD RIGHT</td>
+      <td>POINT_MOVEMENT Operation Mode</td>
+    </tr>
+    <tr>
+      <td><img alt="Dualshock PS button" src="https://www.psdevwiki.com/ps4/images/thumb/1/16/Tex_guidepanel_PS.png/23px-Tex_guidepanel_PS.png" width="23" height="23" srcset="https://www.psdevwiki.com/ps4/images/thumb/1/16/Tex_guidepanel_PS.png/35px-Tex_guidepanel_PS.png 1.5x, /ps4/images/1/16/Tex_guidepanel_PS.png 2x"></td>
+      <td>Start</td>
+    </tr>
   </tbody>
 <table>
-
+  
+> The button thumbnails were retrieved from [DS4-USB](https://www.psdevwiki.com/ps4/DS4-USB)
 ## Controller Message Receiver
 
 This node is in charge of reading the message string from the topic and parsing it into the data format to be sent via serial to the ArbotiX. For it to work, you need to connect the ArbotiX to a USB port and allow the lecture and writing of the port. To do that, you have to list the USB ports to determine which one corresponds to your ArbotiX
