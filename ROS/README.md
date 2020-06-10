@@ -75,6 +75,64 @@ A list containing all the hidraw devices found will be shown. Then, you'll be pr
 
 ### DS4 Controller Mapping
 
+<table>
+  <thead>
+    <tr>
+      <th>Button</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <img alt="Dualshock Left Stick" src =  "https://www.psdevwiki.com/ps4/images/thumb/e/e5/Tex_guidepanel_L.png/23px-Tex_guidepanel_L.png" width="23" height="23" srcset="https://www.psdevwiki.com/ps4/images/thumb/e/e5/Tex_guidepanel_L.png/35px-Tex_guidepanel_L.png 1.5x, /ps4/images/e/e5/Tex_guidepanel_L.png 2x"> Y Axis (0 = <img src="https://www.psdevwiki.com/ps4/images/thumb/2/27/Stick_L_UP.png/23px-Stick_L_UP.png" width="23" height="23" srcset="https://www.psdevwiki.com/ps4/images/thumb/0/03/Stick_L_UP.png/35px-Stick_L_UP.png 1.5x, /ps4/images/0/03/Stick_L_UP.png 2x"> top )
+      </td>
+      <td>Controls velocity in <b>x</b>. Controller returns 0 when joystick is at top, ~127 when it is centered and 255 when it is at bottom. The node parses it to have 0 when it is centered, 127 when full top and 255 when full bottom.</td>
+    </tr>
+    <tr>
+      <td>
+        <img alt="Dualshock Left Stick" src =  "https://www.psdevwiki.com/ps4/images/thumb/e/e5/Tex_guidepanel_L.png/23px-Tex_guidepanel_L.png" width="23" height="23" srcset="https://www.psdevwiki.com/ps4/images/thumb/e/e5/Tex_guidepanel_L.png/35px-Tex_guidepanel_L.png 1.5x, /ps4/images/e/e5/Tex_guidepanel_L.png 2x"> X Axis (0 = <img src="https://www.psdevwiki.com/ps4/images/0/03/Stick_L_LEFT.png" width="23" height="23" srcset="https://www.psdevwiki.com/ps4/images/thumb/0/03/Stick_L_LEFT.png/35px-Stick_L_LEFT.png 1.5x, /ps4/images/0/03/Stick_L_LEFT.png 2x"> left )
+      </td>
+      <td>Controls velocity in <b>y</b>. Controller returns 0 when joystick is at left, ~127 when it is centered and 255 when it is at right. The node parses it to have 0 when it is centered, 127 when full left and 255 when full right.</td>
+    </tr>
+    <tr>
+      <td>
+        <img alt="Dualshock Right Stick" src =  "https://www.psdevwiki.com/ps4/images/thumb/7/7a/Tex_guidepanel_R.png/23px-Tex_guidepanel_R.png" width="23" height="23" srcset="https://www.psdevwiki.com/ps4/images/thumb/7/7a/Tex_guidepanel_R.png/35px-Tex_guidepanel_R.png 1.5x, /ps4/images/7/7a/Tex_guidepanel_R.png 2x"> Y Axis 
+      </td>
+      <td>Controls velocity in <b>z</b>. Controller returns 0 when joystick is at top, ~127 when it is centered and 255 when it is at bottom. The node parses it to have 0 when it is centered, 127 when full top and 255 when full bottom.</td>
+    </tr>
+    <tr>
+      <td><img alt="Dualshock R3 button" src="https://www.psdevwiki.com/ps4/images/thumb/0/0a/Tex_guidepanel_R3.png/23px-Tex_guidepanel_R3.png" width="23" height="23" srcset="https://www.psdevwiki.com/ps4/images/thumb/0/0a/Tex_guidepanel_R3.png/35px-Tex_guidepanel_R3.png 1.5x, /ps4/images/0/0a/Tex_guidepanel_R3.png 2x"></td>
+      <td>Move Home</td>
+    </tr>
+    <tr>
+      <td><img alt="Dualshock L3 button" src="https://www.psdevwiki.com/ps4/images/thumb/0/0b/Tex_guidepanel_L3.png/23px-Tex_guidepanel_L3.png" width="23" height="23" srcset="https://www.psdevwiki.com/ps4/images/thumb/0/0b/Tex_guidepanel_L3.png/35px-Tex_guidepanel_L3.png 1.5x, /ps4/images/0/0b/Tex_guidepanel_L3.png 2x"></td>
+      <td>Move Rest</td>
+    </tr>
+    <tr>
+      <td><img alt="Dualshock triangle button" src="https://www.psdevwiki.com/ps4/images/thumb/7/75/Tex_guidepanel_Triangle.png/23px-Tex_guidepanel_Triangle.png" width="23" height="23" srcset="/ps4/images/thumb/7/75/Tex_guidepanel_Triangle.png/35px-Tex_guidepanel_Triangle.png 1.5x, /ps4/images/7/75/Tex_guidepanel_Triangle.png 2x"></td>
+      <td>Move Center</td>
+    </tr>
+    <tr>
+      <td><img alt="Dualshock R2 button" src="https://www.psdevwiki.com/ps4/images/thumb/9/9a/Tex_guidepanel_R2.png/23px-Tex_guidepanel_R2.png" width="23" height="23" srcset="/ps4/images/thumb/9/9a/Tex_guidepanel_R2.png/35px-Tex_guidepanel_R2.png 1.5x, /ps4/images/9/9a/Tex_guidepanel_R2.png 2x"> (0 = released, 255 = fully pressed</td>
+      <td>Gamma velocity</td>
+    </tr>
+     <tr>
+      <td><img alt="Dualshock L2 button" src="https://www.psdevwiki.com/ps4/images/thumb/e/e8/Tex_guidepanel_L2.png/23px-Tex_guidepanel_L2.png" width="23" height="23" srcset="https://www.psdevwiki.com/ps4/images/thumb/e/e8/Tex_guidepanel_L2.png/35px-Tex_guidepanel_L2.png 1.5x, /ps4/images/e/e8/Tex_guidepanel_L2.png 2x"> (0 = released, 255 = fully pressed</td>
+      <td>Q5 velocity</td>
+    </tr>
+    <tr>
+      <td><img alt="Dualshock R1 button" src="https://www.psdevwiki.com/ps4/images/thumb/a/ab/Tex_guidepanel_R1.png/23px-Tex_guidepanel_R1.png" width="23" height="23" srcset="https://www.psdevwiki.com/ps4/images/thumb/a/ab/Tex_guidepanel_R1.png/35px-Tex_guidepanel_R1.png 1.5x, /ps4/images/a/ab/Tex_guidepanel_R1.png 2x"></td>
+      <td>Sign of Gamma Velocity (unpressed = positive, pressed = negative)</td>
+    </tr>
+    <tr>
+      <td><img alt="Dualshock L1 button" src="https://www.psdevwiki.com/ps4/images/thumb/b/b3/Tex_guidepanel_L1.png/23px-Tex_guidepanel_L1.png" width="23" height="23" srcset="https://www.psdevwiki.com/ps4/images/thumb/b/b3/Tex_guidepanel_L1.png/35px-Tex_guidepanel_L1.png 1.5x, /ps4/images/b/b3/Tex_guidepanel_L1.png 2x"></td>
+      <td>Sign of Q5 Velocity (unpressed = positive, pressed = negative)</td>
+    </tr>
+    
+  </tbody>
+<table>
+
 ## Controller Message Receiver
 
 This node is in charge of reading the message string from the topic and parsing it into the data format to be sent via serial to the ArbotiX. For it to work, you need to connect the ArbotiX to a USB port and allow the lecture and writing of the port. To do that, you have to list the USB ports to determine which one corresponds to your ArbotiX
