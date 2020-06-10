@@ -129,7 +129,14 @@ A list containing all the hidraw devices found will be shown. Then, you'll be pr
       <td><img alt="Dualshock L1 button" src="https://www.psdevwiki.com/ps4/images/thumb/b/b3/Tex_guidepanel_L1.png/23px-Tex_guidepanel_L1.png" width="23" height="23" srcset="https://www.psdevwiki.com/ps4/images/thumb/b/b3/Tex_guidepanel_L1.png/35px-Tex_guidepanel_L1.png 1.5x, /ps4/images/b/b3/Tex_guidepanel_L1.png 2x"></td>
       <td>Sign of Q5 Velocity (unpressed = positive, pressed = negative)</td>
     </tr>
-    
+    <tr>
+      <td><img alt="Dualshock circle button" src="https://www.psdevwiki.com/ps4/images/thumb/a/ad/Tex_guidepanel_Circle.png/23px-Tex_guidepanel_Circle.png" width="23" height="23" srcset="https://www.psdevwiki.com/ps4/images/thumb/a/ad/Tex_guidepanel_Circle.png/35px-Tex_guidepanel_Circle.png 1.5x, /ps4/images/a/ad/Tex_guidepanel_Circle.png 2x"></td>
+      <td>Open Grip </td>
+    </tr>
+    <tr>
+      <td><img alt="Dualshock cross button" src="https://www.psdevwiki.com/ps4/images/thumb/3/31/Tex-guidepanel-Cross.png/23px-Tex-guidepanel-Cross.png" width="23" height="23" srcset="https://www.psdevwiki.com/ps4/images/thumb/3/31/Tex-guidepanel-Cross.png/35px-Tex-guidepanel-Cross.png 1.5x, /ps4/images/3/31/Tex-guidepanel-Cross.png 2x"></td>
+      <td>Close Grip </td>
+    </tr>
   </tbody>
 <table>
 
