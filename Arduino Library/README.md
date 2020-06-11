@@ -2,6 +2,8 @@
 
 The WidowX Arduino Library was created to simplify the operation of the [WidowX Robot Arm](https://www.trossenrobotics.com/widowxrobotarm) of [Trossen Robotics](https://www.trossenrobotics.com/) when controlled with the [Arbotix-M Robocontroller](https://learn.trossenrobotics.com/arbotix). It is based on the [ax12.h library](https://github.com/vanadiumlabs/arbotix/blob/master/libraries/Bioloid/ax12.h). Also, inside some of its functions, it uses the Matrix object as defined in [BasicLinearAlgebra.h](https://github.com/tomstewart89/BasicLinearAlgebra). Hence, it requires installation in order to work properly.
 
+For simplicity, each motor's angle is labeled Q1, Q2, Q3, Q4, Q5 and Q6. So whenever you see **Qn**, know that it is reffering to the angle of the motor.
+
 ## Installation
 
 First, you’ll need to follow the [ArbotiX-M Robocontroller Getting Started Guide](https://learn.trossenrobotics.com/arbotix/arbotix-quick-start.html) and test the correct connectivity with your WidowX arm. Be mindful of the Arduino version that is being installed, since the documentation specifies that Arduino 1.0.6 is the only one that works with the ArbotiX.
