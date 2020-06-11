@@ -57,7 +57,7 @@ Finally, before running the ROS nodes, don't forget to start the master with `$ 
 
 The DS$ controller communicates with the computer following the **Human Interface Device** standard. The data format in which the DS4 sends the actions on the controller is described in the [DS4-USB](https://www.psdevwiki.com/ps4/DS4-USB) page.
 
-> **Note** It describes the HID package when connected with cable, since the package sent when connected via Bluetooth is different
+> **NOTE** It describes the HID package when connected with cable, since the package sent when connected via Bluetooth is different
 
 When you connect the DS4 to a USB port in Ubuntu, an hidraw file is created under **/dev**. Before using it with this node, it is important to enable the lecture from it. To do it, first identify the hidraw number assigned to the controller with the following command
 
@@ -169,7 +169,7 @@ A list containing all the hidraw devices found will be shown. Then, you'll be pr
 > The button thumbnails were retrieved from [DS4-USB](https://www.psdevwiki.com/ps4/DS4-USB)
 ## Controller Message Receiver
 
-> **Note** before running this node, you should have already connected the ArbotiX to the USB port and to the power source. In other words, the WidowX should be ready and only waiting for the handshake to begin operation
+> **NOTE** before running this node, you should have already connected the ArbotiX to the USB port and to the power source. In other words, the WidowX should be ready and only waiting for the handshake to begin operation
 
 This node is in charge of reading the message string from the topic and parsing it into the data format to be sent via serial to the ArbotiX. For it to work, you need to connect the ArbotiX to a USB port and allow the lecture and writing of the port. To do that, you have to list the USB ports to determine which one corresponds to your ArbotiX
 
@@ -202,7 +202,7 @@ There are two nodes in this package, as explained before. One of them is in char
 
 Once you have them, you'll need to chose which one will be the master. That is, the one that will orquestrate the communication. I'll explain the case in which the master will be in charge of reading the controller and the slave will be communicating with the ArbotiX. Why is this? Well, the motivation behind all of this work is to use the WidowX in a rescue robot. In this scenario, we need a computer inside the robot that will connect via LAN to another computer that the user has. So, it makes sense that the master is the computer that the user has direct access to, and that the slave is the robot's computer. But remember, this is only one of the many applications. Judge by yourself which arrangement suits best your needs.
 
-> *Note* the following instructions require a bit of knowledge in networks. So if dynamic/static IP, LAN, DHCP and SSH sound like an *out of this world* language (and I'm not talking about Elvish, Klingon or Dothraki for all you nerds out there), make sure to make a fast Wikipedia search to understand the basics.
+> **NOTE** the following instructions require a bit of knowledge in networks. So if dynamic/static IP, LAN, DHCP and SSH sound like an *out of this world* language (and I'm not talking about Elvish, Klingon or Dothraki for all you nerds out there), make sure to make a fast Wikipedia search to understand the basics.
 
 Ok, so once you've decided which will be your master and your slave, you'll need to connect to the same LAN. Then, get the IP addresses of both computers. You can do that by clicking the *connection information* option when you select the connectivity symbol or by running `ifconfig` in your terminal. If the IP of the computers is being assigned by the DHCP, you'll need to retrieve the IPs every time you do this. That is why it is better to leave a static IP in both computers. 
 
