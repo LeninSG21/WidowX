@@ -9,7 +9,7 @@ Since I cannot explain everything once again in here, why don't you check out th
 
 ## Understanding the WidowX
 
-In this section the kinematics of the WidowX Rotbot Arm will be described, in order to understand both the indexing in the library and the directions of turn of every motor.
+In this section the kinematics of the WidowX Rotbot Arm will be described, in order to understand the directions of turn of every motor and the position of each coordinate system.
 
 ### Motors
 
