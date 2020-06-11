@@ -20,7 +20,7 @@ First, lets take a look to the following diagram.
 
 In here, we see the different blocks that interconnect to allow the controller to move the WidowX Arm. The controller sends the HID package to the node *ds4_receiver* that is in charge of reading this information and publish the appropriate message to the topic *controller_message*. The node *controller_msg_listener* is subscribed to said topic, and when it receives a message, the node arranges the message into the [data format](https://github.com/LeninSG21/WidowX/tree/master/Arduino%20Library/Examples#data-format) that will be sent to the ArbotiX that is running the **MoveWithController.ino** code. 
 
-Notice also that each node is being executed by different computers. This is ideal to run move the WidowX remotely. However, it is not necessary to run it separately. You can execute this nodes in the same computer. If you want to execute it with different PCs connected via LAN, check the section [Remote Connection](https://github.com/LeninSG21/WidowX/blob/master/ROS/README.md#remote-connection) section.
+Notice also that each node is being executed by different computers. This is ideal to run move the WidowX remotely. However, it is not necessary to run it separately. You can execute these nodes in the same computer. If you want to execute it with different PCs connected via LAN, check the section [Remote Connection](https://github.com/LeninSG21/WidowX/blob/master/ROS/README.md#remote-connection) section.
 
 ## Message structure
 
@@ -36,8 +36,14 @@ Once you've donde that, download this repo and copy the **ds4_2_widow** package 
 ```sh
 $ cp -r ds4_2_widow ~/catkin_ws/src
 ```
+Check that the files are saved as executables. To do that, go to the the directory of the package, into the scripts folder and list the files in there with the `-l` flag. Both files should have the x indicator.
 
-Then, build the package with the instruction **catkin_make**. Sometimes, it requires to erase the build and devel folders. If so, run the first line of the following example.
+```sh
+$ cd ~/catkin_ws/src/ds4_2_widow/scripts
+$ ls -l 
+```
+
+Then, build the package with the instruction **catkin_make**. Sometimes, it requires to erase the build and devel folders. If so, run the first line of the following example. Run `source devel/setup.bash` to update the list of nodes.
 
 ```sh
 $ cd ~/catkin_ws
@@ -163,6 +169,8 @@ A list containing all the hidraw devices found will be shown. Then, you'll be pr
 > The button thumbnails were retrieved from [DS4-USB](https://www.psdevwiki.com/ps4/DS4-USB)
 ## Controller Message Receiver
 
+> **Note** before running this node, you should have already connected the ArbotiX to the USB port and to the power source. In other words, the WidowX should be ready and only waiting for the handshake to begin operation
+
 This node is in charge of reading the message string from the topic and parsing it into the data format to be sent via serial to the ArbotiX. For it to work, you need to connect the ArbotiX to a USB port and allow the lecture and writing of the port. To do that, you have to list the USB ports to determine which one corresponds to your ArbotiX
 
 ```sh
@@ -188,6 +196,51 @@ The last step of the initialization is asking the user to press the PS button to
 During the normal loop, this node will print into the terminal the message that is being received. Move the controller to see how this message changes. Also, the robot arm should be moving by now. If it moves as expected, play a little and get used to the controls!
 
 ## Remote Connection
-Hello there!
+The [Running ROS across multiple machines](http://wiki.ros.org/ROS/Tutorials/MultipleMachines) page has a more in depth explanation of how to interconnect nodes running in different computers through your LAN. In here, we'll do basically the same that is explained there, but with a focus on this package.
 
+There are two nodes in this package, as explained before. One of them is in charge or reading the controller and the other of receiving the messages and sending the control bytes to the ArbotiX. Each one of those nodes will be running on a different machine. So yeah, to try this **you'll need to PCs running Ubuntu with ROS installed**.
 
+Once you have them, you'll need to chose which one will be the master. That is, the one that will orquestrate the communication. I'll explain the case in which the master will be in charge of reading the controller and the slave will be communicating with the ArbotiX. Why is this? Well, the motivation behind all of this work is to use the WidowX in a rescue robot. In this scenario, we need a computer inside the robot that will connect via LAN to another computer that the user has. So, it makes sense that the master is the computer that the user has direct access to, and that the slave is the robot's computer. But remember, this is only one of the many applications. Judge by yourself which arrangement suits best your needs.
+
+> *Note* the following instructions require a bit of knowledge in networks. So if dynamic/static IP, LAN, DHCP and SSH sound like an *out of this world* language (and I'm not talking about Elvish, Klingon or Dothraki for all you nerds out there), make sure to make a fast Wikipedia search to understand the basics.
+
+Ok, so once you've decided which will be your master and your slave, you'll need to connect to the same LAN. Then, get the IP addresses of both computers. You can do that by clicking the *connection information* option when you select the connectivity symbol or by running `ifconfig` in your terminal. If the IP of the computers is being assigned by the DHCP, you'll need to retrieve the IPs every time you do this. That is why it is better to leave a static IP in both computers. 
+
+After doing that, you want to export the IPs and assign the ROS master. If you have both computers with you, you would just open a terminal in each one of them. But hey, if you are planning to have two computers is because you might want to do it remotely. And if that is the purpose, you might not have physical access to the slave PC. For example, with the rescue robot, if I had to initialize the nodes again, I would not go all the way into the heart of a collapsed building to open the terminal of my robot. So, the best option is to access to the slave computer via **secure shell** (**ssh** for the homies). 
+
+I will not go into the explanation of how to setup your computers to accept **ssh** connections, so be sure to check it out before you continue. I will assume everything is working fine in the next step.
+
+First, check that the master computer can reach the slave. A simple ping to the slave's ip address should be more than enough.
+
+```sh
+$ ping <slave_ip_address>
+```
+Press `CTRL+C` to stop the execution.
+
+After testing connectivity, initialize a terminal of the slave in your master computer by running 
+
+```sh
+$ ssh <slave_ip_address>
+```
+Enter the password of the slave computer (if required). Now, you should see the name of your terminal change into the slave's name.
+
+Open a new terminal in your master. In here, you'll execute the `roscore` command. Open again another terminal. In this new terminal, type the following commands
+
+```sh
+$ export ROS_IP=<master_ip_address>
+$ export ROS_MASTER_URI=http://<master_ip_address>:11311
+```
+Now, go back to the slave's terminal you opened with ssh. In here, you'll do the same, except that you'll change the ip address in the `ROS_IP` command.
+
+```sh
+$ export ROS_IP=<slave_ip_address>
+$ export ROS_MASTER_URI=http://<master_ip_address>:11311
+```
+
+If this was done correctly, in the roscore terminal you should see that the connection was established. 
+
+> **NOTE** For this to work you need to make sure that each computer has only **one** IP address assigned. If you are connected via Ethernet but still have the WiFi enabled, you might have two IPs and it won't work. Trust me, had a hard time trying to find this error. Louder for the people in the back: **be sure to have only one IP in each computer!**
+
+Yay, so we are ready to go! In your master computer, follow the steps detailed in [DS4 Receiver](https://github.com/LeninSG21/WidowX/tree/master/ROS#ds4-receiver) to initialize the node. In the slave computer, run the *controller_msg_receiver* as detailed in [Controller Message Receiver](https://github.com/LeninSG21/WidowX/tree/master/ROS#controller-message-receiver).
+
+If everything is working fine, by now you should see the controllers information in both terminals and the arm should be moving!
