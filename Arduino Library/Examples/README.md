@@ -119,6 +119,8 @@ The `MoveWithController.ino` file is designed to receive a message via the seria
 
 For the speed values in x, y and z, the range goes from 0 to 127 (7 bits). To determine the direction, the sign bit is provided where **0** means the velocity is **positive** and **1** that it is **negative**. Therefore, 0 is equivalent to 128, since the speed bits are effectively the same; 127 is max positive speed and 255 would be max negative speed. In the cases of the Gamma and Q5 speed, the value goes from 0 to 255 (8 bits), and the direction bit is assigned in the options nibble. 
 
+>**NOTE** Gamma controls the rotation of the wrist, which goes from the fourth motor up to the grip. So for example, a gamma of 90° would make the grip to face down. Q5 is the angle of the fifth motor, so by changing this value you are controlling the rotation of the grip. The best way to understand this is to try the inverse kinematics with the `HowToUse.ino` code.
+
 First, the code receives the 6 bytes and saves them into a buffer, like so
 ```cpp
 Serial.readBytes(buff, 6);
