@@ -86,6 +86,9 @@ public:
     void moveArmRdBase(float Px, float Py, float Pz, Matrix<3, 3> &RdBase);
     void moveArmRdBase(float Px, float Py, float Pz, Matrix<3, 3> &RdBase, int time);
 
+    //Sequence
+    void performSequenceGamma(float[][] seq, int num_poses);
+
     //Rotations
     void rotz(float angle, Matrix<3, 3> &Rz);
     void roty(float angle, Matrix<3, 3> &Ry);

@@ -635,6 +635,16 @@ void WidowX::moveArmRdBase(float Px, float Py, float Pz, Matrix<3, 3> &RdBase, i
     interpolate(remainingTime);
 }
 
+//Sequence
+
+void WidowX::performSequenceGamma(float[][] seq, int num_poses)
+{
+    for (int i = 0; i < num_poses; i++)
+    {
+        moverArmGamma(seq[i][0], seq[i][1], seq[i][2], seq[i][3], (int)seq[i][4])
+    }
+}
+
 //Rotations
 void WidowX::rotz(float angle, Matrix<3, 3> &Rz)
 {
