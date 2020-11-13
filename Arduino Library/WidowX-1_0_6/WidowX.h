@@ -38,10 +38,15 @@ public:
     void init(uint8_t relax);
 
     //Preloaded Poses
-    // void moveRest();
+    void moveCenter();
+    void moveHome();
+    void moveRest();
+    void moveToPose(const unsigned int *pose);
 
     //Get Information
     void checkVoltage();
+    void getCurrentPosition();
+    int getServoPosition(int idx);
 
 private:
     //Constants
@@ -53,6 +58,14 @@ private:
     //variables
     uint8_t id[6];
     uint8_t isRelaxed;
+    float W[6][4];
+    uint16_t current_position[6];
+    uint16_t desired_position[6];
+    uint16_t next_position[6];
+
+    //Poses and interpolation
+    void cubeInterpolation(float q0, float qf, float *w, int time);
+    void interpolateFromPose(const unsigned int *pose, int remainingTime);
 };
 
 #endif

@@ -32,6 +32,23 @@ SOFTWARE.
 
 //////////////////////////////////////////////////////////////////////////////////////
 /*
+    *** GLOBAL VARIABLES ***
+*/
+float phi2;
+float a, b, c, cond;
+float q1, q2, q3, q4, q5, q6;
+int posQ4, posQ5, posQ6;
+const float limPi_2 = 181 * M_PI / 360;
+const float lim5Pi_6 = 5 * M_PI / 6;
+const float q2Lim[] = {-limPi_2, limPi_2};
+const float q3Lim[] = {-limPi_2, lim5Pi_6};
+const float q4Lim[] = {-11 * M_PI / 18, limPi_2};
+long t0;
+int currentTime, remainingTime;
+float curr_2, curr_3;
+
+//////////////////////////////////////////////////////////////////////////////////////
+/*
     *** PUBLIC FUNCTIONS ***
 */
 
@@ -61,10 +78,34 @@ void WidowX::init(uint8_t relax)
 {
     delay(10);
     checkVoltage();
-    // moveRest();
+    moveRest();
     // delay(100);
     // if (relax)
     //     relaxServos();
+}
+
+//Preloaded Poses
+/*
+ * Moves to the arm to the center of all motors, forming an upside L. As seen from 
+ * the kinematic analysis done for this library, it would be equal to setting all
+ * articular values to 0°.  Reads the pose from PROGMEM. Updates point once it's done
+*/
+void WidowX::moveCenter()
+{
+    getCurrentPosition();
+    interpolateFromPose(Center, DEFAULT_TIME);
+    // updatePoint();
+}
+/*
+ * Moves to the arm to the home position as defined by the bioloid controller. 
+ * Reads the pose from PROGMEM. Updates point once it's done
+*/
+void WidowX::moveHome()
+{
+
+    getCurrentPosition();
+    interpolateFromPose(Home, DEFAULT_TIME);
+    // updatePoint();
 }
 
 /*
@@ -72,12 +113,19 @@ void WidowX::init(uint8_t relax)
  * Reads the pose from PROGMEM. Updates point once it's done
  * 
 */
-// void WidowX::moveRest()
-// {
-//     getCurrentPosition();
-//     interpolateFromPose(Rest, DEFAULT_TIME);
-//     updatePoint();
-// }
+void WidowX::moveRest()
+{
+    getCurrentPosition();
+    interpolateFromPose(Rest, DEFAULT_TIME);
+    // updatePoint();
+}
+
+void WidowX::moveToPose(const unsigned int *pose)
+{
+    getCurrentPosition();
+    interpolateFromPose(pose, DEFAULT_TIME);
+    // updatePoint();
+}
 
 //Get Information
 /* 
@@ -106,4 +154,84 @@ void WidowX::checkVoltage()
         Serial.println("Voltage levels nominal.");
     }
     Serial.println("###########################");
+}
+
+/*
+ * This function calls getServoPosition for each of the motors in the arm
+*/
+void WidowX::getCurrentPosition()
+{
+    for (uint8_t i = 0; i < SERVOCOUNT; i++)
+    {
+        getServoPosition(i);
+    }
+}
+
+int WidowX::getServoPosition(int idx)
+{
+    uint8_t i = 0;
+    uint16_t prev = current_position[idx];
+    current_position[idx] = GetPosition(id[idx]);
+    while (current_position[idx] == -1)
+    {
+        i = (i % 10) + 1;
+        delay(5 * i);
+        current_position[idx] = GetPosition(id[idx]);
+    }
+    // current_angle[idx] = positionToAngle(idx, current_position[idx]);
+    // float_position[idx] = current_position[idx];
+    return current_position[idx];
+}
+
+//////////////////////////////////////////////////////////////////////////////////////
+/*
+    *** PRIVATE FUNCTIONS ***
+*/
+
+//Poses and interpolation
+
+void WidowX::cubeInterpolation(float q0, float qf, float *w, int time)
+{
+    const float tf_2_3 = 2 / pow(time, 3);
+    const float tf_3_2 = 3 / pow(time, 2);
+
+    w[0] = q0;
+    w[1] = 0;
+    w[2] = tf_3_2 * (qf - q0);
+    w[3] = tf_2_3 * (q0 - qf);
+
+    return;
+}
+
+void WidowX::interpolateFromPose(const unsigned int *pose, int remainingTime)
+{
+    uint8_t i = 0;
+    for (i = 0; i < SERVOCOUNT - 1; i++)
+    {
+        desired_position[i] = pgm_read_word_near(pose + i);
+        cubeInterpolation(current_position[i], desired_position[i], W[i], remainingTime);
+    }
+    t0 = millis();
+    currentTime = millis() - t0;
+    while (currentTime < remainingTime)
+    {
+        curr_2 = pow(currentTime, 2);
+        curr_3 = pow(currentTime, 3);
+        for (i = 0; i < SERVOCOUNT - 1; i++)
+        {
+            next_position[i] = round(W[i][0] + W[i][1] * currentTime + W[i][2] * curr_2 + W[i][3] * curr_3);
+            SetPosition(id[i], next_position[i]);
+        }
+
+        delay(10);
+        currentTime = millis() - t0;
+    }
+
+    SetPosition(id[0], desired_position[0]);
+    SetPosition(id[1], desired_position[1]);
+    SetPosition(id[2], desired_position[2]);
+    SetPosition(id[3], desired_position[3]);
+    SetPosition(id[4], desired_position[4]);
+    // SetPosition(id[5], desired_position[5]);
+    delay(3);
 }
