@@ -373,6 +373,38 @@ void WidowX::moveGrip(int close)
     SetPosition(id[5], posQ6);
 }
 
+void WidowX::openCloseGrip(int close)
+{
+    posQ6 = getServoPosition(5);
+
+    if (close)
+    {
+        while (posQ6 != 0)
+        {
+            if (posQ6 > 10)
+                posQ6 -= 10;
+            else
+                posQ6 = 0;
+            SetPosition(id[5], posQ6);
+            delay(10);
+        }
+    }
+    else
+    {
+        while (posQ6 != 512)
+        {
+            if (posQ6 > 522)
+                posQ6 -= 10;
+            else if (posQ6 < 502)
+                posQ6 += 10;
+            else
+                posQ6 = 512;
+            SetPosition(id[5], posQ6);
+            delay(10);
+        }
+    }
+}
+
 /**
  * Sets the specified servo to the given position without a smooth tansition.
  * Designed to be used with a controller.
@@ -481,7 +513,7 @@ void WidowX::moveArmQ4(float Px, float Py, float Pz)
 
     if (getIK_Q4(Px, Py, Pz))
     {
-        Serial.println("No solution for IK!");
+        // Serial.println("No solution for IK!");
         return;
     }
     // Serial.println("\nDesired");
@@ -518,7 +550,7 @@ void WidowX::moveArmQ4(float Px, float Py, float Pz, int time)
     getCurrentPosition();
     if (getIK_Q4(Px, Py, Pz))
     {
-        Serial.println("No solution for IK!");
+        // Serial.println("No solution for IK!");
         return;
     }
 
@@ -541,7 +573,7 @@ void WidowX::moveArmGamma(float Px, float Py, float Pz, float gamma)
     getCurrentPosition();
     if (getIK_Gamma(Px, Py, Pz, gamma))
     {
-        Serial.println("No solution for IK!");
+        //Serial.println("No solution for IK!");
         return;
     }
 
@@ -563,7 +595,7 @@ void WidowX::moveArmGamma(float Px, float Py, float Pz, float gamma, int time)
     getCurrentPosition();
     if (getIK_Gamma(Px, Py, Pz, gamma))
     {
-        Serial.println("No solution for IK!");
+        //Serial.println("No solution for IK!");
         return;
     }
 
@@ -588,7 +620,7 @@ void WidowX::moveArmRd(float Px, float Py, float Pz, float Rd[3][3])
     getCurrentPosition();
     if (getIK_Rd(Px, Py, Pz, Rd))
     {
-        Serial.println("No solution for IK!");
+        //Serial.println("No solution for IK!");
         return;
     }
     interpolate(DEFAULT_TIME);
@@ -611,7 +643,7 @@ void WidowX::moveArmRd(float Px, float Py, float Pz, float Rd[3][3], int time)
     getCurrentPosition();
     if (getIK_Rd(Px, Py, Pz, Rd))
     {
-        Serial.println("No solution for IK!");
+        //Serial.println("No solution for IK!");
         return;
     }
     remainingTime = time - (millis() - t0);
@@ -634,7 +666,7 @@ void WidowX::moveArmRdBase(float Px, float Py, float Pz, float RdBase[3][3])
     getCurrentPosition();
     if (getIK_RdBase(Px, Py, Pz, RdBase))
     {
-        Serial.println("No solution for IK!");
+        //Serial.println("No solution for IK!");
         return;
     }
 
@@ -657,7 +689,7 @@ void WidowX::moveArmRdBase(float Px, float Py, float Pz, float RdBase[3][3], int
     getCurrentPosition();
     if (getIK_RdBase(Px, Py, Pz, RdBase))
     {
-        Serial.println("No solution for IK!");
+        //Serial.println("No solution for IK!");
         return;
     }
 

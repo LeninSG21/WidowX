@@ -70,6 +70,7 @@ public:
     void moveServo2Angle(int idx, float angle);
     void moveServo2Position(int idx, int pos);
     void moveGrip(int close);
+    void openCloseGrip(int close);
     void setServo2Position(int idx, int position);
     void moveServoWithSpeed(int idx, int speed, long initial_time);
 
