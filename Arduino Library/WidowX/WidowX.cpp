@@ -843,7 +843,6 @@ void WidowX::setArmGamma(float Px, float Py, float Pz, float gamma)
     if (isRelaxed)
         torqueServos();
 
-    //getCurrentPosition();
     if (getIK_Gamma_Controller(Px, Py, Pz, gamma))
     {
         updatePoint();
@@ -853,7 +852,6 @@ void WidowX::setArmGamma(float Px, float Py, float Pz, float gamma)
     for (int i = 0; i < 4; i++)
     {
         desired_position[i] = angleToPosition(i, desired_angle[i]);
-        // SetPosition(id[i], desired_position[i]);
     }
     syncWrite(4);
 }

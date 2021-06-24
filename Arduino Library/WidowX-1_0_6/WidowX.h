@@ -60,7 +60,7 @@ public:
     void getCurrentPosition(uint8_t until_idx);
     int getServoPosition(int idx);
     float getServoAngle(int idx);
-    // void getPoint(float *p);
+    void getPoint(float *p);
 
     //Torque
     void relaxServos();
@@ -130,7 +130,7 @@ private:
     int angleToPosition(int idx, float angle);
 
     //Poses and interpolation
-    // void updatePoint();
+    void updatePoint();
     void cubeInterpolation(float q0, float qf, float *w, int time);
     void interpolate(int remTime);
     void interpolateFromPose(const unsigned int *pose, int remTime);

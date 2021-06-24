@@ -30,9 +30,6 @@ SOFTWARE.
 #include "math.h"
 #include "poses.h"
 
-// #define M_PI 3.14159265358979323846264338327950288   /* pi             */
-//#define M_PI_2 1.57079632679489661923132169163975144 /* pi/2           */
-
 //////////////////////////////////////////////////////////////////////////////////////
 /*
     *** GLOBAL VARIABLES ***
@@ -117,7 +114,7 @@ void WidowX::moveCenter()
 {
     getCurrentPosition();
     interpolateFromPose(Center, DEFAULT_TIME);
-    //updatePoint();
+    updatePoint();
 }
 /*
  * Moves to the arm to the home position as defined by the bioloid controller. 
@@ -128,7 +125,7 @@ void WidowX::moveHome()
 
     getCurrentPosition();
     interpolateFromPose(Home, DEFAULT_TIME);
-    //updatePoint();
+    updatePoint();
 }
 
 /*
@@ -140,14 +137,14 @@ void WidowX::moveRest()
 {
     getCurrentPosition();
     interpolateFromPose(Rest, DEFAULT_TIME);
-    //updatePoint();
+    updatePoint();
 }
 
 void WidowX::moveToPose(const unsigned int *pose)
 {
     getCurrentPosition();
     interpolateFromPose(pose, DEFAULT_TIME);
-    //updatePoint();
+    updatePoint();
 }
 
 //Get Information
@@ -241,13 +238,13 @@ float WidowX::getServoAngle(int idx)
  * Calls the private function updatePoint to load the current point and copies
  * the values into the provided pointer
  */
-// void WidowX::getPoint(float *p)
-// {
-//     updatePoint();
-//     p[0] = point[0];
-//     p[1] = point[1];
-//     p[2] = point[2];
-// }
+void WidowX::getPoint(float *p)
+{
+    updatePoint();
+    p[0] = point[0];
+    p[1] = point[1];
+    p[2] = point[2];
+}
 
 //Torque
 /*
@@ -497,40 +494,11 @@ void WidowX::moveArmQ4(float Px, float Py, float Pz)
 
     getCurrentPosition();
 
-    // Serial.println("CURRENT");
-    // Serial.print("q1: ");
-    // Serial.println(current_angle[0]);
-    // Serial.print("q2: ");
-    // Serial.println(current_angle[1]);
-    // Serial.print("q3: ");
-    // Serial.println(current_angle[2]);
-    // Serial.print("q4: ");
-    // Serial.println(current_angle[3]);
-    // Serial.print("q5: ");
-    // Serial.println(current_angle[4]);
-    // Serial.print("q6: ");
-    // Serial.println(current_angle[5]);
-
     if (getIK_Q4(Px, Py, Pz))
     {
-        // Serial.println("No solution for IK!");
+        Serial.println("No solution for IK!");
         return;
     }
-    // Serial.println("\nDesired");
-    // Serial.print("q1: ");
-    // Serial.println(desired_angle[0]);
-    // Serial.print("q2: ");
-    // Serial.println(desired_angle[1]);
-    // Serial.print("q3: ");
-    // Serial.println(desired_angle[2]);
-    // Serial.print("q4: ");
-    // Serial.println(desired_angle[3]);
-    // Serial.print("q5: ");
-    // Serial.println(desired_angle[4]);
-    // Serial.print("q6: ");
-    // Serial.println(desired_angle[5]);
-
-    // return;
 
     interpolate(DEFAULT_TIME);
 }
@@ -550,7 +518,7 @@ void WidowX::moveArmQ4(float Px, float Py, float Pz, int time)
     getCurrentPosition();
     if (getIK_Q4(Px, Py, Pz))
     {
-        // Serial.println("No solution for IK!");
+        Serial.println("No solution for IK!");
         return;
     }
 
@@ -573,7 +541,7 @@ void WidowX::moveArmGamma(float Px, float Py, float Pz, float gamma)
     getCurrentPosition();
     if (getIK_Gamma(Px, Py, Pz, gamma))
     {
-        //Serial.println("No solution for IK!");
+        Serial.println("No solution for IK!");
         return;
     }
 
@@ -595,7 +563,7 @@ void WidowX::moveArmGamma(float Px, float Py, float Pz, float gamma, int time)
     getCurrentPosition();
     if (getIK_Gamma(Px, Py, Pz, gamma))
     {
-        //Serial.println("No solution for IK!");
+        Serial.println("No solution for IK!");
         return;
     }
 
@@ -620,7 +588,7 @@ void WidowX::moveArmRd(float Px, float Py, float Pz, float Rd[3][3])
     getCurrentPosition();
     if (getIK_Rd(Px, Py, Pz, Rd))
     {
-        //Serial.println("No solution for IK!");
+        Serial.println("No solution for IK!");
         return;
     }
     interpolate(DEFAULT_TIME);
@@ -643,7 +611,7 @@ void WidowX::moveArmRd(float Px, float Py, float Pz, float Rd[3][3], int time)
     getCurrentPosition();
     if (getIK_Rd(Px, Py, Pz, Rd))
     {
-        //Serial.println("No solution for IK!");
+        Serial.println("No solution for IK!");
         return;
     }
     remainingTime = time - (millis() - t0);
@@ -666,7 +634,7 @@ void WidowX::moveArmRdBase(float Px, float Py, float Pz, float RdBase[3][3])
     getCurrentPosition();
     if (getIK_RdBase(Px, Py, Pz, RdBase))
     {
-        //Serial.println("No solution for IK!");
+        Serial.println("No solution for IK!");
         return;
     }
 
@@ -689,7 +657,7 @@ void WidowX::moveArmRdBase(float Px, float Py, float Pz, float RdBase[3][3], int
     getCurrentPosition();
     if (getIK_RdBase(Px, Py, Pz, RdBase))
     {
-        //Serial.println("No solution for IK!");
+        Serial.println("No solution for IK!");
         return;
     }
 
@@ -710,6 +678,11 @@ void WidowX::performSequenceGamma(float **seq, int num_poses)
 //Rotations
 void WidowX::rotz(float angle, float Rz[3][3])
 {
+    /*
+    * Rz = {cos(angle), -sin(angle), 0,
+    *       sin(angle), cos(angle), 0,
+    *       0, 0, 1};
+    */
     Rz[0][0] = cos(angle);
     Rz[0][1] = -sin(angle);
     Rz[0][2] = 0;
@@ -721,14 +694,15 @@ void WidowX::rotz(float angle, float Rz[3][3])
     Rz[2][0] = 0;
     Rz[2][1] = 0;
     Rz[2][2] = 1;
-
-    // Rz = {cos(angle), -sin(angle), 0,
-    //       sin(angle), cos(angle), 0,
-    //       0, 0, 1};
 }
 
 void WidowX::roty(float angle, float Ry[3][3])
 {
+    /* 
+     *  Ry = {cos(angle), 0, sin(angle),
+     *        0, 1, 0,
+     *        -sin(angle), 0, cos(angle)}
+    */
     Ry[0][0] = cos(angle);
     Ry[0][1] = 0;
     Ry[0][2] = sin(angle);
@@ -740,14 +714,15 @@ void WidowX::roty(float angle, float Ry[3][3])
     Ry[2][0] = -sin(angle);
     Ry[2][1] = 0;
     Ry[2][2] = cos(angle);
-
-    // Ry = {cos(angle), 0, sin(angle),
-    //       0, 1, 0,
-    //       -sin(angle), 0, cos(angle)};
 }
 
 void WidowX::rotx(float angle, float Rx[3][3])
 {
+    /*
+     * Rx = {1, 0, 0,
+     *       0, cos(angle), -sin(angle),
+     *       0, sin(angle), cos(angle)};
+    */
     Rx[0][0] = 1;
     Rx[0][1] = 0;
     Rx[0][2] = 0;
@@ -759,10 +734,6 @@ void WidowX::rotx(float angle, float Rx[3][3])
     Rx[2][0] = 0;
     Rx[2][1] = sin(angle);
     Rx[2][2] = cos(angle);
-
-    // Rx = {1, 0, 0,
-    //       0, cos(angle), -sin(angle),
-    //       0, sin(angle), cos(angle)};
 }
 
 //////////////////////////////////////////////////////////////////////////////////////
@@ -814,24 +785,35 @@ int WidowX::angleToPosition(int idx, float angle)
 
 //Poses and interpolation
 
-// void WidowX::updatePoint()
-// {
-//     getCurrentPosition();
-//     q1 = current_angle[0];
-//     q2 = current_angle[1];
-//     q3 = current_angle[2];
-//     q4 = current_angle[3];
+void WidowX::updatePoint()
+{
+    getCurrentPosition();
+    q1 = current_angle[0];
+    q2 = current_angle[1];
+    q3 = current_angle[2];
+    q4 = current_angle[3];
 
-//     phi2 = D * cos(alpha + q2) + L3 * cos(q2 + q3) + L4 * cos(q2 + q3 + q4);
-//     global_gamma = -q2 - q3 - q4;
-//     point[0] = cos(q1) * phi2;
-//     point[1] = sin(q1) * phi2;
-//     point[2] = L0 + D * sin(alpha + q2) + L3 * sin(q2 + q3) + L4 * sin(q2 + q3 + q4);
-//     // speed_points[0] = point[0];
-//     // speed_points[1] = point[1];
-//     // speed_points[2] = point[2];
-// }
+    phi2 = D * cos(alpha + q2) + L3 * cos(q2 + q3) + L4 * cos(q2 + q3 + q4);
+    global_gamma = -q2 - q3 - q4;
+    point[0] = cos(q1) * phi2;
+    point[1] = sin(q1) * phi2;
+    point[2] = L0 + D * sin(alpha + q2) + L3 * sin(q2 + q3) + L4 * sin(q2 + q3 + q4);
+    speed_points[0] = point[0];
+    speed_points[1] = point[1];
+    speed_points[2] = point[2];
+}
 
+/*
+ * For this cube interpolation, the initial time and both the initial and final
+ * speed are assumed to always be 0. Thus, when solving the inverse matrix and
+ * multiplying the matrix and the desired vector, a simple generalization is 
+ * obtained, where a0 = q0, a1 = 0, a2 = (qf-q0)*(3/tf^2), and a3 = (q0-qf)*(2/tf^3).
+ * This saves time by reducing the amount of operations needed. However, it won't
+ * work when the start and end velocities and the initial time are not zero. 
+ * For those scenarios, a function like 
+ * cubeInterpolation(float q0, float qf, float v0, float vf, float *w, int t0, int tf)
+ * should be made.
+*/
 void WidowX::cubeInterpolation(float q0, float qf, float *w, int time)
 {
     const float tf_2_3 = 2 / pow(time, 3);
@@ -924,17 +906,15 @@ void WidowX::setArmGamma(float Px, float Py, float Pz, float gamma)
     if (isRelaxed)
         torqueServos();
 
-    //getCurrentPosition();
     if (getIK_Gamma_Controller(Px, Py, Pz, gamma))
     {
-        // updatePoint();
+        updatePoint();
         return;
     }
 
     for (int i = 0; i < 4; i++)
     {
         desired_position[i] = angleToPosition(i, desired_angle[i]);
-        // SetPosition(id[i], desired_position[i]);
     }
     syncWrite(4);
 }
