@@ -74,7 +74,7 @@ The next picture shows the motors numbered. Remember that the idx values are fix
 
 #### WidowX()
 
-> Constructor of the class. Needs to be called first to create an instance. It assigns values to some constants and fills the id array from 1 to 6.
+> Constructor of the class. Needs to be called first to create an instance. It assigns values to some constants and fills the id array from 1 to 6. In here, you can change the values of the multiplying factors to obtain a faster or slower movement speed when using a controller, but keep in mind the units
 
 #### void init(uint8_t relax)
 
@@ -196,29 +196,29 @@ The next picture shows the motors numbered. Remember that the idx values are fix
 
 > Moves the center of the gripper to the specified coordinates Px, Py and Pz, as seen from the base of the robot, with the desired angle gamma of the gripper. For example, gamma = pi/2 will make the arm a Pick N Drop since the gripper will be heading to the floor. It uses getIK_Gamma. This function only affects Q1, Q2, Q3, and Q4. It interpolates the step using a cubic interpolation with the given time in milliseconds. If there is no solution for the IK, the arm does not move, and a message is printed into the serial monitor.
 
-#### void moveArmRd(float Px, float Py, float Pz, Matrix<3, 3> &Rd)
+#### void moveArmRd(float Px, float Py, float Pz, float Rd[3][3])
 
 > Moves the center of the gripper to the specified coordinates Px, Py and Pz, and with the desired rotation of the coordinate system of the gripper, as seen from the coordinate system {1} of the robot. For example, when Rd is an identity matrix of 3x3, the gripper's rotation will be such that the orientation of the system {1} and the orientation of the gripper's system will be the same. Thus, it is harder to obtain solutions for the IK. It uses getIK_Rd. This function affects Q1, Q2, Q3, Q4, and Q5. It interpolates the step using a cubic interpolation with the default time. If there is no solution for the IK, the arm does not move, and a message is printed into the serial monitor. Rd is a Matrix given as a bidimensial float array
-#### void moveArmRd(float Px, float Py, float Pz, Matrix<3, 3> &Rd, int time);
+#### void moveArmRd(float Px, float Py, float Pz, float Rd[3][3], int time);
 
 > Moves the center of the gripper to the specified coordinates Px, Py and Pz, as seen from the base of the robot, and with the desired rotation of the coordinate system of the gripper, as seen from the coordinate system {1} of the robot. For example, when Rd is an identity matrix of 3x3, the gripper's rotation will be such that the orientation of the system {1} and the orientation of the gripper's system will be the same. Thus, it is harder to obtain solutions for the IK. It uses getIK_Rd. This function affects Q1, Q2, Q3, Q4, and Q5. It interpolates the step using a cubic interpolation with the given time in milliseconds. If there is no solution for the IK, the arm does not move, and a message is printed into the serial monitor. Rd is a Matrix given as a bidimensial float array
 
-#### void moveArmRdBase(float Px, float Py, float Pz, Matrix<3, 3> &RdBase);
+#### void moveArmRdBase(float Px, float Py, float Pz, float RdBase[3][3]);
 
 > Moves the center of the gripper to the specified coordinates Px, Py and Pz, and with the desired rotation of the coordinate system of the gripper, as seen from the base of the robot. It uses getIK_RdBase. This function affects Q1, Q2, Q3, Q4, and Q5. It interpolates the step using a cubic interpolation with the default time. If there is no solution for the IK, the arm does not move, and a message is printed into the serial monitor.
 
-#### void moveArmRdBase(float Px, float Py, float Pz, Matrix<3, 3> &RdBase, int time);
+#### void moveArmRdBase(float Px, float Py, float Pz, float RdBase[3][3], int time);
 
 > Moves the center of the gripper to the specified coordinates Px, Py and Pz, and with the desired rotation of the coordinate system of the gripper, as seen from the base of the robot. It uses getIK_RdBase. This function affects Q1, Q2, Q3, Q4, and Q5. It interpolates the step using a cubic interpolation with the given time in milliseconds. If there is no solution for the IK, the arm does not move, and a message is printed into the serial monitor.
 
-#### void rotz(float angle, Matrix<3, 3> &Rz)
+#### void rotz(float angle, float Rz[3][3])
 
 > This function saves a rotation matrix in Z by the given angle in rads into the Matrix object Rz.
 
-#### void roty(float angle, Matrix<3, 3> &Ry)
+#### void roty(float angle, float Ry[3][3])
 
 > This function saves a rotation matrix in Y by the given angle in rads into the Matrix object Ry.
 
-#### void rotx(float angle, Matrix<3, 3> &Rx)
+#### void rotx(float angle, float Rx[3][3])
 
 > This function saves a rotation matrix in X by the given angle in rads into the Matrix object Rx.
