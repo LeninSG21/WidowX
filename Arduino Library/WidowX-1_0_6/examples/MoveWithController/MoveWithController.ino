@@ -22,6 +22,8 @@ SOFTWARE.
  */
 
 #include <WidowX.h>
+#include <poses.h>
+#include <ax12.h>
 
 #define NUM_CHARS 6
 #define USER_FRIENDLY 0
@@ -76,7 +78,7 @@ void setup() {
   
   Serial.println("ok");
   while (!Serial.available());
-  while (Serial.readStringUntil('\n') != "ok")
+  while (readStringUntil('\n') != "ok")
   {
       while (!Serial.available());
   }
@@ -88,7 +90,7 @@ void setup() {
 void loop() {
   if(Serial.available())
   {
-    Serial.readBytes(buff, NUM_CHARS);
+    readBytes();
     initial_time = millis();
     options = buff[5] & 0xF; //Get options bits
     
@@ -123,6 +125,7 @@ void loop() {
             widow.movePointWithSpeed(vx, vy, vz, vg, initial_time);
           else
             widow.moveArmWithSpeed(vx, vy, vz, vg, initial_time);
+          
         }
             
         
@@ -172,4 +175,24 @@ void loop() {
     
   }
 
+}
+
+String readStringUntil(char endchar){
+  char c = 0;
+  String s = "";
+  while(1){
+   while(!Serial.available());
+   c = Serial.read();
+   if(c == endchar)
+     break;
+   s += c;
+  }
+  return s;
+}
+
+void readBytes(){
+  for(int i = 0; i < NUM_CHARS; i++){
+     while(!Serial.available());
+     buff[i] = (byte) Serial.read(); 
+  }
 }

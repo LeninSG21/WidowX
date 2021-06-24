@@ -67,6 +67,7 @@ WidowX::WidowX()
     for (uint8_t i = 0; i < SERVOCOUNT; i++)
     {
         id[i] = i + 1;
+        current_angle[i] = 0;
     }
 }
 
@@ -442,7 +443,6 @@ void WidowX::moveServoWithSpeed(int idx, int speed, long initial_time)
 */
 void WidowX::movePointWithSpeed(int vx, int vy, int vz, int vg, long initial_time)
 {
-
     int tf = millis() - initial_time;
     speed_points[0] = max(-xy_lim, min(xy_lim, speed_points[0] + vx * Kp * tf));
     speed_points[1] = max(-xy_lim, min(xy_lim, speed_points[1] + vy * Kp * tf));
@@ -787,14 +787,15 @@ int WidowX::angleToPosition(int idx, float angle)
 
 void WidowX::updatePoint()
 {
-    getCurrentPosition();
-    q1 = current_angle[0];
-    q2 = current_angle[1];
-    q3 = current_angle[2];
-    q4 = current_angle[3];
+    // getCurrentPosition();
+    q1 = getServoAngle(0);
+    q2 = getServoAngle(1);
+    q3 = getServoAngle(2);
+    q4 = getServoAngle(3);
 
     phi2 = D * cos(alpha + q2) + L3 * cos(q2 + q3) + L4 * cos(q2 + q3 + q4);
     global_gamma = -q2 - q3 - q4;
+
     point[0] = cos(q1) * phi2;
     point[1] = sin(q1) * phi2;
     point[2] = L0 + D * sin(alpha + q2) + L3 * sin(q2 + q3) + L4 * sin(q2 + q3 + q4);

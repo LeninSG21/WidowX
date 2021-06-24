@@ -20,15 +20,15 @@ def setup():
 
 def callback(data):
     global init
-
+    
     if init and data.data != "start":
         return
     else:
         if data.data == "start":
             init = False
         elif widow.in_waiting:
-            rospy.loginfo(rospy.get_caller_id() + data.data)
-            widow.readline()
+            rospy.loginfo(rospy.get_caller_id() + "-> " + data.data)
+            rospy.loginfo(rospy.get_caller_id() + "-> Widow: " + widow.readline())
             for char in data.data.split(","):
                 widow.write(chr(int(char)))
 
