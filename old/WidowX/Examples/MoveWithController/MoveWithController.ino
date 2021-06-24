@@ -3,7 +3,7 @@ MoveWithController.ino - Code to control the WidowX Robot Arm with a controller
 Created by Lenin Silva, June, 2020
  
  MIT License
-Copyright (c) 2021 LeninSG21
+Copyright (c) 2020 LeninSG21
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
@@ -22,8 +22,6 @@ SOFTWARE.
  */
 
 #include <WidowX.h>
-#include <poses.h>
-#include <ax12.h>
 
 #define NUM_CHARS 6
 #define USER_FRIENDLY 0
@@ -78,7 +76,7 @@ void setup() {
   
   Serial.println("ok");
   while (!Serial.available());
-  while (readStringUntil('\n') != "ok")
+  while (Serial.readStringUntil('\n') != "ok")
   {
       while (!Serial.available());
   }
@@ -90,7 +88,7 @@ void setup() {
 void loop() {
   if(Serial.available())
   {
-    readBytes();
+    Serial.readBytes(buff, NUM_CHARS);
     initial_time = millis();
     options = buff[5] & 0xF; //Get options bits
     
@@ -125,7 +123,6 @@ void loop() {
             widow.movePointWithSpeed(vx, vy, vz, vg, initial_time);
           else
             widow.moveArmWithSpeed(vx, vy, vz, vg, initial_time);
-          
         }
             
         
@@ -175,24 +172,4 @@ void loop() {
     
   }
 
-}
-
-String readStringUntil(char endchar){
-  char c = 0;
-  String s = "";
-  while(1){
-   while(!Serial.available());
-   c = Serial.read();
-   if(c == endchar)
-     break;
-   s += c;
-  }
-  return s;
-}
-
-void readBytes(){
-  for(int i = 0; i < NUM_CHARS; i++){
-     while(!Serial.available());
-     buff[i] = (byte) Serial.read(); 
-  }
 }

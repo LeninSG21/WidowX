@@ -4,7 +4,7 @@ Created by Lenin Silva, June, 2020
  
  MIT License
 
-Copyright (c) 2021 LeninSG21
+Copyright (c) 2020 LeninSG21
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -29,6 +29,9 @@ SOFTWARE.
 #include <ax12.h>
 #include "math.h"
 #include "poses.h"
+#include <BasicLinearAlgebra.h>
+
+using namespace BLA;
 
 //////////////////////////////////////////////////////////////////////////////////////
 /*
@@ -60,14 +63,12 @@ float curr_2, curr_3;
 WidowX::WidowX()
     : SERVOCOUNT(6), L0(9), L1(14), L2(5), L3(14),
       L4(14), D(sqrt(pow(L1, 2) + pow(L2, 2))), alpha(atan2(L1, L2)), sa(sin(alpha)),
-      ca(cos(alpha)), isRelaxed(0), DEFAULT_TIME(2000), xy_lim(43.0), z_lim_up(52.0), z_lim_down(-26.0),
-      gamma_lim(M_PI_2), Kp(60.0 / 127000), Kg(M_PI_2 / 255000), Ks(1024.0 / 255000)
+      ca(cos(alpha)), isRelaxed(0), DEFAULT_TIME(2000)
 {
 
     for (uint8_t i = 0; i < SERVOCOUNT; i++)
     {
         id[i] = i + 1;
-        current_angle[i] = 0;
     }
 }
 
@@ -371,38 +372,6 @@ void WidowX::moveGrip(int close)
     SetPosition(id[5], posQ6);
 }
 
-void WidowX::openCloseGrip(int close)
-{
-    posQ6 = getServoPosition(5);
-
-    if (close)
-    {
-        while (posQ6 != 0)
-        {
-            if (posQ6 > 10)
-                posQ6 -= 10;
-            else
-                posQ6 = 0;
-            SetPosition(id[5], posQ6);
-            delay(10);
-        }
-    }
-    else
-    {
-        while (posQ6 != 512)
-        {
-            if (posQ6 > 522)
-                posQ6 -= 10;
-            else if (posQ6 < 502)
-                posQ6 += 10;
-            else
-                posQ6 = 512;
-            SetPosition(id[5], posQ6);
-            delay(10);
-        }
-    }
-}
-
 /**
  * Sets the specified servo to the given position without a smooth tansition.
  * Designed to be used with a controller.
@@ -443,6 +412,7 @@ void WidowX::moveServoWithSpeed(int idx, int speed, long initial_time)
 */
 void WidowX::movePointWithSpeed(int vx, int vy, int vz, int vg, long initial_time)
 {
+
     int tf = millis() - initial_time;
     speed_points[0] = max(-xy_lim, min(xy_lim, speed_points[0] + vx * Kp * tf));
     speed_points[1] = max(-xy_lim, min(xy_lim, speed_points[1] + vy * Kp * tf));
@@ -578,9 +548,9 @@ void WidowX::moveArmGamma(float Px, float Py, float Pz, float gamma, int time)
  * it is harder to obtain solutions for the IK. It uses getIK_Rd. This function affects Q1, Q2, Q3, Q4, and Q5. 
  * It interpolates the step using a cubic interpolation with the default time.
  * If there is no solution for the IK, the arm does not move and a message is printed into the serial monitor.
- * Rd is a Matrix given as a bidimensial float array
+ * Rd is a Matrix object as defined by BasicLinearAlgebra.h
 */
-void WidowX::moveArmRd(float Px, float Py, float Pz, float Rd[3][3])
+void WidowX::moveArmRd(float Px, float Py, float Pz, Matrix<3, 3> &Rd)
 {
     if (isRelaxed)
         torqueServos();
@@ -601,9 +571,9 @@ void WidowX::moveArmRd(float Px, float Py, float Pz, float Rd[3][3])
  * it is harder to obtain solutions for the IK. It uses getIK_Rd. This function affects Q1, Q2, Q3, Q4, and Q5. 
  * It interpolates the step using a cubic interpolation with the given time in milliseconds.
  * If there is no solution for the IK, the arm does not move and a message is printed into the serial monitor.
- * Rd is a Matrix given as a bidimensial float array
+ * Rd is a Matrix object as defined by BasicLinearAlgebra.h
 */
-void WidowX::moveArmRd(float Px, float Py, float Pz, float Rd[3][3], int time)
+void WidowX::moveArmRd(float Px, float Py, float Pz, Matrix<3, 3> &Rd, int time)
 {
     if (isRelaxed)
         torqueServos();
@@ -626,7 +596,7 @@ void WidowX::moveArmRd(float Px, float Py, float Pz, float Rd[3][3], int time)
  * with the default time. If there is no solution for the IK, the arm does not move, 
  * and a message is printed into the serial monitor.
 */
-void WidowX::moveArmRdBase(float Px, float Py, float Pz, float RdBase[3][3])
+void WidowX::moveArmRdBase(float Px, float Py, float Pz, Matrix<3, 3> &RdBase)
 {
     if (isRelaxed)
         torqueServos();
@@ -649,7 +619,7 @@ void WidowX::moveArmRdBase(float Px, float Py, float Pz, float RdBase[3][3])
  * with the given time in milliseconds. If there is no solution for the IK, the arm does not move, 
  * and a message is printed into the serial monitor.
 */
-void WidowX::moveArmRdBase(float Px, float Py, float Pz, float RdBase[3][3], int time)
+void WidowX::moveArmRdBase(float Px, float Py, float Pz, Matrix<3, 3> &RdBase, int time)
 {
     if (isRelaxed)
         torqueServos();
@@ -667,73 +637,34 @@ void WidowX::moveArmRdBase(float Px, float Py, float Pz, float RdBase[3][3], int
 
 //Sequence
 
-void WidowX::performSequenceGamma(float **seq, int num_poses)
+void WidowX::performSequenceGamma(float[][] seq, int num_poses)
 {
     for (int i = 0; i < num_poses; i++)
     {
-        moveArmGamma(seq[i][0], seq[i][1], seq[i][2], seq[i][3], (int)seq[i][4]);
+        moverArmGamma(seq[i][0], seq[i][1], seq[i][2], seq[i][3], (int)seq[i][4])
     }
 }
 
 //Rotations
-void WidowX::rotz(float angle, float Rz[3][3])
+void WidowX::rotz(float angle, Matrix<3, 3> &Rz)
 {
-    /*
-    * Rz = {cos(angle), -sin(angle), 0,
-    *       sin(angle), cos(angle), 0,
-    *       0, 0, 1};
-    */
-    Rz[0][0] = cos(angle);
-    Rz[0][1] = -sin(angle);
-    Rz[0][2] = 0;
-
-    Rz[1][0] = sin(angle);
-    Rz[1][1] = cos(angle);
-    Rz[1][2] = 0;
-
-    Rz[2][0] = 0;
-    Rz[2][1] = 0;
-    Rz[2][2] = 1;
+    Rz = {cos(angle), -sin(angle), 0,
+          sin(angle), cos(angle), 0,
+          0, 0, 1};
 }
 
-void WidowX::roty(float angle, float Ry[3][3])
+void WidowX::roty(float angle, Matrix<3, 3> &Ry)
 {
-    /* 
-     *  Ry = {cos(angle), 0, sin(angle),
-     *        0, 1, 0,
-     *        -sin(angle), 0, cos(angle)}
-    */
-    Ry[0][0] = cos(angle);
-    Ry[0][1] = 0;
-    Ry[0][2] = sin(angle);
-
-    Ry[1][0] = 0;
-    Ry[1][1] = 1;
-    Ry[1][2] = 0;
-
-    Ry[2][0] = -sin(angle);
-    Ry[2][1] = 0;
-    Ry[2][2] = cos(angle);
+    Ry = {cos(angle), 0, sin(angle),
+          0, 1, 0,
+          -sin(angle), 0, cos(angle)};
 }
 
-void WidowX::rotx(float angle, float Rx[3][3])
+void WidowX::rotx(float angle, Matrix<3, 3> &Rx)
 {
-    /*
-     * Rx = {1, 0, 0,
-     *       0, cos(angle), -sin(angle),
-     *       0, sin(angle), cos(angle)};
-    */
-    Rx[0][0] = 1;
-    Rx[0][1] = 0;
-    Rx[0][2] = 0;
-
-    Rx[1][0] = 0;
-    Rx[1][1] = cos(angle);
-    Rx[1][2] = -sin(angle);
-
-    Rx[2][0] = 0;
-    Rx[2][1] = sin(angle);
-    Rx[2][2] = cos(angle);
+    Rx = {1, 0, 0,
+          0, cos(angle), -sin(angle),
+          0, sin(angle), cos(angle)};
 }
 
 //////////////////////////////////////////////////////////////////////////////////////
@@ -787,15 +718,14 @@ int WidowX::angleToPosition(int idx, float angle)
 
 void WidowX::updatePoint()
 {
-    // getCurrentPosition();
-    q1 = getServoAngle(0);
-    q2 = getServoAngle(1);
-    q3 = getServoAngle(2);
-    q4 = getServoAngle(3);
+    getCurrentPosition();
+    q1 = current_angle[0];
+    q2 = current_angle[1];
+    q3 = current_angle[2];
+    q4 = current_angle[3];
 
     phi2 = D * cos(alpha + q2) + L3 * cos(q2 + q3) + L4 * cos(q2 + q3 + q4);
     global_gamma = -q2 - q3 - q4;
-
     point[0] = cos(q1) * phi2;
     point[1] = sin(q1) * phi2;
     point[2] = L0 + D * sin(alpha + q2) + L3 * sin(q2 + q3) + L4 * sin(q2 + q3 + q4);
@@ -804,37 +734,37 @@ void WidowX::updatePoint()
     speed_points[2] = point[2];
 }
 
-/*
- * For this cube interpolation, the initial time and both the initial and final
- * speed are assumed to always be 0. Thus, when solving the inverse matrix and
- * multiplying the matrix and the desired vector, a simple generalization is 
- * obtained, where a0 = q0, a1 = 0, a2 = (qf-q0)*(3/tf^2), and a3 = (q0-qf)*(2/tf^3).
- * This saves time by reducing the amount of operations needed. However, it won't
- * work when the start and end velocities and the initial time are not zero. 
- * For those scenarios, a function like 
- * cubeInterpolation(float q0, float qf, float v0, float vf, float *w, int t0, int tf)
- * should be made.
-*/
-void WidowX::cubeInterpolation(float q0, float qf, float *w, int time)
+void WidowX::cubeInterpolation(Matrix<4> &params, float *w, int time)
 {
+    const float tf_1_2 = 1 / pow(time, 2);
     const float tf_2_3 = 2 / pow(time, 3);
-    const float tf_3_2 = 3 / pow(time, 2);
+    const float tf_3_2 = 3 * tf_1_2;
 
-    w[0] = q0;
-    w[1] = 0;
-    w[2] = tf_3_2 * (qf - q0);
-    w[3] = tf_2_3 * (q0 - qf);
-
+    Matrix<4, 4> M_inv = {1, 0, 0, 0,
+                          0, 0, 1, 0,
+                          -tf_3_2, tf_3_2, -2 / time, -1 / time,
+                          tf_2_3, -tf_2_3, tf_1_2, tf_1_2};
+    Matrix<4> wi = M_inv * params;
+    *w = wi(0);
+    *(w + 1) = wi(1);
+    *(w + 2) = wi(2);
+    *(w + 3) = wi(3);
     return;
 }
 
 void WidowX::interpolate(int remTime)
 {
     uint8_t i;
+    Matrix<4> params;
     for (i = 0; i < SERVOCOUNT - 1; i++)
     {
         desired_position[i] = angleToPosition(i, desired_angle[i]);
-        cubeInterpolation(current_position[i], desired_position[i], W[i], remTime);
+        params(0) = current_position[i];
+        params(1) = desired_position[i];
+        params(2) = 0;
+        params(3) = 0;
+
+        cubeInterpolation(params, W[i], remTime);
     }
 
     t0 = millis();
@@ -864,10 +794,16 @@ void WidowX::interpolate(int remTime)
 void WidowX::interpolateFromPose(const unsigned int *pose, int remTime)
 {
     uint8_t i;
+    Matrix<4> params;
     for (i = 0; i < SERVOCOUNT - 1; i++)
     {
         desired_position[i] = pgm_read_word_near(pose + i);
-        cubeInterpolation(current_position[i], desired_position[i], W[i], remTime);
+        params(0) = current_position[i];
+        params(1) = desired_position[i];
+        params(2) = 0;
+        params(3) = 0;
+
+        cubeInterpolation(params, W[i], remTime);
     }
 
     t0 = millis();
@@ -1138,18 +1074,20 @@ uint8_t WidowX::getIK_Gamma(float Px, float Py, float Pz, float gamma)
     return 0;
 }
 
-uint8_t WidowX::getIK_Rd(float Px, float Py, float Pz, float Rd[3][3])
+uint8_t WidowX::getIK_Rd(float Px, float Py, float Pz, Matrix<3, 3> &Rd)
 {
-    const float gamma = atan2(-Rd[2][0], Rd[0][0]);
+    const float gamma = atan2(-Rd(2, 0), Rd(0, 0));
 
     //Do getIK_Gamma and check if it succeeds. If not, it returns 1
     if (getIK_Gamma(Px, Py, Pz, gamma))
         return 1;
 
     //Obtain the matrixes to calculate q5
-    float rx5_3_2 = Rd[2][1] * cos(gamma) + Rd[0][1] * sin(gamma);
-    //float rx5_1_1 = Rd[1][1]
-    q5 = atan2(rx5_3_2, Rd[1][1]);
+    Matrix<3, 3> RyGamma;
+    roty(gamma, RyGamma);
+    Invert(RyGamma);
+    Matrix<3, 3> Rx5 = RyGamma * Rd;
+    q5 = atan2(Rx5(2, 1), Rx5(1, 1));
 
     //Save q5 into the desired_angle array. the other values
     //Have already been saved by getIKGamma
@@ -1158,24 +1096,14 @@ uint8_t WidowX::getIK_Rd(float Px, float Py, float Pz, float Rd[3][3])
     return 0;
 }
 
-uint8_t WidowX::getIK_RdBase(float Px, float Py, float Pz, float RdBase[3][3])
+uint8_t WidowX::getIK_RdBase(float Px, float Py, float Pz, Matrix<3, 3> &RdBase)
 {
     //Obtain the desired rotation as seen from {1} to use it with getIK_Rd
     q1 = atan2(Py, Px);
-
-    float c1 = cos(q1), s1 = sin(q1);
-
-    float r11 = RdBase[0][0] * c1 + RdBase[1][0] * s1;
-    float r12 = RdBase[0][1] * c1 + RdBase[1][1] * s1;
-    float r22 = RdBase[1][1] * c1 - RdBase[0][1] * s1;
-    // float r31 = RdBase[2][0];
-    // float r32 = RdBase[2][1];
-
-    // RotZ(q1)^-1 * RdBase
-    // Only the Rd values that are needed in the getIK_Rd function are calculated
-    float Rd[3][3] = {{r11, r12, 0},
-                      {0, r22, 0},
-                      {RdBase[2][0], RdBase[2][1], 0}};
+    Matrix<3, 3> RzQ1;
+    rotz(q1, RzQ1);
+    Invert(RzQ1);
+    Matrix<3, 3> Rd = RzQ1 * RdBase;
 
     return getIK_Rd(Px, Py, Pz, Rd);
 }
