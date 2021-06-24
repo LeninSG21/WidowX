@@ -2,8 +2,6 @@
 
 In this directory you will find some useful codes to implement with your WidowX Robot Arm right away. Take a look to how they work and modify them to suit your needs!
 
-> Note: This examples are also included under the _WidowX_ folder. Hence, when properly installed, you can use them by opening in the Aduino IDE `File > Examples > WidowX > [Example]`
-
 ## Test Arm
 
 The `testArm.ino` file is ideal to check if the installation was done properly. Just load it into your ArbotiX and watch the arm move from rest, to home, to center and back to rest. Also, check the Serial Monitor to observe some useful messages, like the operation voltage of the arm.
@@ -16,7 +14,7 @@ Also, you can see the effect of relaxing the servos and activating the torque. M
 
 This code is also useful to completely understand what it is explained in the [id vs idx](https://github.com/LeninSG21/WidowX/tree/master/Arduino%20Library#id-vs-idx) section of the documentation. Remember that this library works with the constant idx (index) of each servomotor rather than with the ids given to each. Be sure to check that section and the play around with the `move2angle` and `move2position` functions. 
 
-> Note: Use the serial monitor at 115,200 bps withn no line ending
+This code depends on the BasicLinearAlgebra.h library, so be sure to download for the code to run appropriately.
 
 ## Move With Controller
 
@@ -123,8 +121,10 @@ For the speed values in x, y and z, the range goes from 0 to 127 (7 bits). To de
 
 >**NOTE** Gamma controls the rotation of the wrist, which goes from the fourth motor up to the grip. So for example, a gamma of 90° would make the grip to face down. Q5 is the angle of the fifth motor, so by changing this value you are controlling the rotation of the grip. The best way to understand this is to try the inverse kinematics with the `HowToUse.ino` code.
 
-First, the code receives the 6 bytes and saves them into a buffer using the `readBytes()` function.
-
+First, the code receives the 6 bytes and saves them into a buffer, like so
+```cpp
+Serial.readBytes(buff, 6);
+```
 Then, it extracts each piece of information from its corresponding bits. For example, to get the velocity in y as a signed integer, the following is done
 ```cpp
 int vy = buff[1] & 0x7F; //Obtain the speed from the 7 bits
@@ -137,7 +137,7 @@ int vq5 = buff[4];
 if ((buff[5] >> 6) & 1) //Obtain the sign bit from the LSB
   vq5 = -vq5;
 ```
-The options nibble can have up to 15 different options (0 must be left untouched), but only 7 are currently being used. That means that you could add even more functionalities with the exact same code. You would just need to add more cases in the switch statement that handles options. However, **leave the 0 as the flag that indicates that no option was given**. Since these options have higher priority than the movement of the arm through joysticks, if the code detects that the option nibble is different from 0, it will **not** process the other bytes of the message and will not move the arm according to the joysticks.
+The options nibble can have up to 15 different options (0 must be left untouched), but only 7 are currently being used. That means that you could add even more functionalities with the exact same code. You would just need to add more cases in the switch statement that handles options. However, leave the 0 as the flag that indicates that no option was given. Since these options have higher priority than the movement of the arm through joysticks, if the code detects that the option nibble is different from 0, it will **not** process the other bytes of the message and will not move the arm according to the joysticks.
 
 ```cpp
 byte options = buff[5] & 0xF; //Get options bits

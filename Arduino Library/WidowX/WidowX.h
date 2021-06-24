@@ -29,14 +29,13 @@ SOFTWARE.
 #define WidowX_h
 
 #include "Arduino.h"
-#include <ax12.h>
-#include <BasicLinearAlgebra.h>
-
-using namespace BLA;
 
 #define MX_28 0
 #define MX_64 1
 #define AX_12 2
+
+#define M_PI_2 1.57079632679489661923132169163975144
+#define M_PI_4 0.785398163397448
 
 class WidowX
 {
@@ -71,6 +70,7 @@ public:
     void moveServo2Angle(int idx, float angle);
     void moveServo2Position(int idx, int pos);
     void moveGrip(int close);
+    void openCloseGrip(int close);
     void setServo2Position(int idx, int position);
     void moveServoWithSpeed(int idx, int speed, long initial_time);
 
@@ -81,18 +81,18 @@ public:
     void moveArmQ4(float Px, float Py, float Pz, int time);
     void moveArmGamma(float Px, float Py, float Pz, float gamma);
     void moveArmGamma(float Px, float Py, float Pz, float gamma, int time);
-    void moveArmRd(float Px, float Py, float Pz, Matrix<3, 3> &Rd);
-    void moveArmRd(float Px, float Py, float Pz, Matrix<3, 3> &Rd, int time);
-    void moveArmRdBase(float Px, float Py, float Pz, Matrix<3, 3> &RdBase);
-    void moveArmRdBase(float Px, float Py, float Pz, Matrix<3, 3> &RdBase, int time);
+    void moveArmRd(float Px, float Py, float Pz, float Rd[3][3]);
+    void moveArmRd(float Px, float Py, float Pz, float Rd[3][3], int time);
+    void moveArmRdBase(float Px, float Py, float Pz, float RdBase[3][3]);
+    void moveArmRdBase(float Px, float Py, float Pz, float RdBase[3][3], int time);
 
     //Sequence
-    void performSequenceGamma(float[][] seq, int num_poses);
+    void performSequenceGamma(float **seq, int num_poses);
 
     //Rotations
-    void rotz(float angle, Matrix<3, 3> &Rz);
-    void roty(float angle, Matrix<3, 3> &Ry);
-    void rotx(float angle, Matrix<3, 3> &Rx);
+    void rotz(float angle, float Rz[3][3]);
+    void roty(float angle, float Ry[3][3]);
+    void rotx(float angle, float Rx[3][3]);
 
 private:
     //Constants
@@ -101,15 +101,15 @@ private:
     const float sa, ca; //sin(alpha), cos(alpha);
     const int DEFAULT_TIME;
     //Limits
-    const float xy_lim = 43.0;
-    const float z_lim_up = 52.0;
-    const float z_lim_down = -26.0;
-    const float gamma_lim = M_PI_2;
+    const float xy_lim;     // = 43.0;
+    const float z_lim_up;   // = 52.0;
+    const float z_lim_down; // = -26.0;
+    const float gamma_lim;  // = M_PI_2;
 
     //Multiplying factors
-    const float Kp = 60.0 / 127000;   //[cm/(ms*bit)]
-    const float Kg = M_PI_2 / 255000; //[rad/(ms*bit)]
-    const float Ks = 1024.0 / 255000; //[pos/(ms*bit)]
+    const float Kp; //[cm/(ms*bit)]
+    const float Kg; //[rad/(ms*bit)]
+    const float Ks; //[pos/(ms*bit)]
 
     //Variables
     uint8_t id[6];
@@ -131,17 +131,17 @@ private:
 
     //Poses and interpolation
     void updatePoint();
-    void cubeInterpolation(Matrix<4> &params, float *w, int time);
-    void interpolate(int remainingTime);
-    void interpolateFromPose(const unsigned int *pose, int remainingTime);
+    void cubeInterpolation(float q0, float qf, float *w, int time);
+    void interpolate(int remTime);
+    void interpolateFromPose(const unsigned int *pose, int remTime);
     void setArmGamma(float Px, float Py, float Pz, float gamma);
     void syncWrite(uint8_t numServos);
 
     //Inverse Kinematics
     uint8_t getIK_Q4(float Px, float Py, float Pz);
     uint8_t getIK_Gamma(float Px, float Py, float Pz, float gamma);
-    uint8_t getIK_Rd(float Px, float Py, float Pz, Matrix<3, 3> &Rd);
-    uint8_t getIK_RdBase(float Px, float Py, float Pz, Matrix<3, 3> &RdBase);
+    uint8_t getIK_Rd(float Px, float Py, float Pz, float Rd[3][3]);
+    uint8_t getIK_RdBase(float Px, float Py, float Pz, float RdBase[3][3]);
     uint8_t getIK_Gamma_Controller(float Px, float Py, float Pz, float gamma);
 };
 
