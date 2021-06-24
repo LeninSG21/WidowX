@@ -1,6 +1,8 @@
 # WidowX
 Hello there! ~~General Kenobi!~~ In this GitHub you'll find some useful codes to start playing around with your Trossen Robotics WidowX Robot Arm. In the section [Arduino Library](https://github.com/LeninSG21/WidowX/tree/master/Arduino%20Library), you'll find the WidowX library, which was designed to give make your life easier. It has inside of it some functions that will allow you to set each motor individually, to move the arm to a given point with an specific rotation in the time you desire, and to even control the arm's movement with a controller! Also, some example codes have been provided, to test the installation of the libraries required and the movement of the arm, to try some functions and understand how they work, and a code ready to be interfaced with a controller with the Serial port. 
 
+> Note: You can watch the [arm working with a DS4 controller](https://youtu.be/rlg3zIFfJhY), using the ROS package, the WidowX.h library and the MoveWithController.ino example, all provided in this repo.
+
 In the [ROS](https://github.com/LeninSG21/WidowX/tree/master/ROS) section, you'll find a package develope to control the WidowX arm with a controller&mdash;more precisely a PS4 Dual Shock 4&mdash;. But if you look at the thouroughly explained documentation, you'll find that you could use any controller you want with the same nodes and Arduino code that I've provided, since you would only need to map the same information into the controller of your preference. 
 
 Since I cannot explain everything once again in here, why don't you check out the specific documentation for each section? I tried to give as much detail as possible, so that the integration of the libraries to your code is as easy as it can be. 
